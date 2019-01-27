@@ -1,0 +1,23 @@
+[info]
+title=Differ
+desc=The pluggin for comparing two files.
+type=cudatext-plugin
+subdir=cuda_differ
+homepage=
+
+[item1]
+section=commands
+caption=Differ\Compare
+method=run
+
+[item2]
+section=commands
+caption=Differ\Refresh
+method=refresh
+
+[item3]
+section=commands
+caption=Differ\Setting
+method=change_settings
+menu=o
+
