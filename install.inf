@@ -7,7 +7,7 @@ homepage=
 
 [item1]
 section=commands
-caption=Differ\Compare
+caption=Differ\Choose files...
 method=run
 
 [item2]
