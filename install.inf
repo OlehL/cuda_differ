@@ -3,7 +3,7 @@ title=Differ
 desc=The pluggin for comparing two files.
 type=cudatext-plugin
 subdir=cuda_differ
-homepage=
+homepage=https://github.com/OlehL/cuda_differ
 
 [item1]
 section=commands
