@@ -10,9 +10,9 @@ from .ui import DifferDialog
 DIFF_TAG = 148
 GAP_WIDTH = 5000
 INIFILE = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'cuda_differ.ini')
-COLOR_CHANGED_LINE = 0x003030
-COLOR_DETAIL_ADD = 0x124200
-COLOR_DETAIL_DEL = 0x07003D
+COLOR_CHANGED = 0x003030
+COLOR_ADDED = 0x124200
+COLOR_DELETED = 0x07003D
 
 
 def html_color_to_int(s):
@@ -27,23 +27,23 @@ def html_color_to_int(s):
         raise Exception('Incorrect color token: '+s)
 
 
-def settings():
-    global COLOR_CHANGED_LINE
-    global COLOR_DETAIL_ADD
-    global COLOR_DETAIL_DEL
+def config():
+    global COLOR_CHANGED
+    global COLOR_ADDED
+    global COLOR_DELETED
     ini = ConfigParser()
     if os.path.isfile(INIFILE):
         ini.read(INIFILE, 'utf8')
-        COLOR_CHANGED_LINE = html_color_to_int(
-            ini.get('colors', 'color_changed_line'))
-        COLOR_DETAIL_ADD = html_color_to_int(
-            ini.get('colors', 'color_detail_add'))
-        COLOR_DETAIL_DEL = html_color_to_int(
-            ini.get('colors', 'color_detail_del'))
+        COLOR_CHANGED = html_color_to_int(
+            ini.get('colors', 'changed'))
+        COLOR_ADDED = html_color_to_int(
+            ini.get('colors', 'added'))
+        COLOR_DELETED = html_color_to_int(
+            ini.get('colors', 'deleted'))
     else:
-        ini['colors'] = {'color_changed_line': '#505000',
-                         'color_detail_add': '#004212',
-                         'color_detail_del': '#3D0007'
+        ini['colors'] = {'changed': '#505000',
+                         'added': '#004212',
+                         'deleted': '#3D0007'
                          }
         with open(INIFILE, 'w', encoding='utf8') as configfile:
             ini.write(configfile)
@@ -65,8 +65,8 @@ class Command:
         self.f1 = None
         self.f2 = None
 
-    def change_settings(self):
-        settings()
+    def change_config(self):
+        config()
         ct.file_open(INIFILE)
 
     def run(self):
@@ -117,7 +117,7 @@ class Command:
         self.scroll.on_tab_change(ed_self)
 
     def refresh(self):
-        settings()
+        config()
         self.clear()
         if not self.f1 or not self.f2:
             return
@@ -131,20 +131,20 @@ class Command:
             diff_id, x, y, nlen = d
             if diff_id == '-':
                 # msg('Delete line {} in file {}'.format(y, self.f1))
-                self.set_attribute(self.a_ed, x, y, nlen, COLOR_CHANGED_LINE)
+                self.set_attribute(self.a_ed, x, y, nlen, COLOR_CHANGED)
             elif diff_id == '+':
                 # msg('Insert line {} in file {}'.format(y, self.f2))
-                self.set_attribute(self.b_ed, x, y, nlen, COLOR_CHANGED_LINE)
+                self.set_attribute(self.b_ed, x, y, nlen, COLOR_CHANGED)
             elif diff_id == '*-':
                 self.set_gap(self.a_ed, y, nlen)
             elif diff_id == '*+':
                 self.set_gap(self.b_ed, y, nlen)
             elif '++' in diff_id:
                 # print(diff_id, x, y, nlen)
-                self.set_attribute(self.b_ed, x, y, nlen, COLOR_DETAIL_ADD)
+                self.set_attribute(self.b_ed, x, y, nlen, COLOR_ADDED)
             elif '--' in diff_id:
                 # print(diff_id, x, y, nlen)
-                self.set_attribute(self.a_ed, x, y, nlen, COLOR_DETAIL_DEL)
+                self.set_attribute(self.a_ed, x, y, nlen, COLOR_DELETED)
 
     def _ed(self, f):
         "return editor object for f"
