@@ -32,7 +32,7 @@ class DifferDialog:
 
         self.h = ct.dlg_proc(0, ct.DLG_CREATE)
         ct.dlg_proc(self.h, ct.DLG_PROP_SET,
-                    prop={'cap': 'Differ: Select files',
+                    prop={'cap': 'Differ: Choose files...',
                           'x': center_ct()[0]-272,
                           'y': center_ct()[1]-100,
                           'w': 545,
@@ -48,7 +48,7 @@ class DifferDialog:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
                     prop={'name': 'f1_label',
                           'cap': 'First file:',
-                          'x': 20,
+                          'x': 8,
                           'y': 8,
                           'w': 200,
                           'tag': 'some_tag'
@@ -62,7 +62,7 @@ class DifferDialog:
                           'val': '',
                           'x': 8,
                           'y': 24,
-                          'w': 449
+                          'w': 447
                           }
                     )
 
@@ -71,9 +71,9 @@ class DifferDialog:
                     prop={
                           'name': 'browse_1',
                           'cap': 'Browse...',
-                          'x': 464,
+                          'x': 460,
                           'y': 24,
-                          'w': 64,
+                          'w': 80,
                           'on_change': self.open_1_file
                           }
                     )
@@ -82,7 +82,7 @@ class DifferDialog:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
                     prop={'name': 'f2_label',
                           'cap': 'Second file:',
-                          'x': 20,
+                          'x': 8,
                           'y': 56,
                           'w': 200,
                           'tag': 'some_tag'
@@ -97,7 +97,7 @@ class DifferDialog:
                           'val': '',
                           'x': 8,
                           'y': 72,
-                          'w': 449
+                          'w': 447
                           }
                     )
 
@@ -106,9 +106,9 @@ class DifferDialog:
                     prop={
                           'name': 'browse_2',
                           'cap': 'Browse...',
-                          'x': 464,
+                          'x': 460,
                           'y': 72,
-                          'w': 64,
+                          'w': 80,
                           'on_change': self.open_2_file
                           }
                     )
@@ -117,10 +117,10 @@ class DifferDialog:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
                     prop={
                           'name': 'ok',
-                          'cap': 'Ok',
-                          'x': 288,
-                          'y': 104,
-                          'w': 64,
+                          'cap': 'OK',
+                          'x': 375,
+                          'y': 118,
+                          'w': 80,
                           'on_change': self.press_ok
                           }
                     )
@@ -130,9 +130,9 @@ class DifferDialog:
                     prop={
                           'name': 'cancel',
                           'cap': 'Cancel',
-                          'x': 384,
-                          'y': 104,
-                          'w': 64,
+                          'x': 460,
+                          'y': 118,
+                          'w': 80,
                           'on_change': self.press_exit
                           }
                     )
