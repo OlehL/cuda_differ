@@ -130,18 +130,20 @@ class Command:
             # print(d)
             diff_id, x, y, nlen = d
             if diff_id == '-':
-                msg('Delete line {} in file {}'.format(y, self.f1))
+                # msg('Delete line {} in file {}'.format(y, self.f1))
                 self.set_attribute(self.a_ed, x, y, nlen, COLOR_CHANGED_LINE)
             elif diff_id == '+':
-                msg('Insert line {} in file {}'.format(y, self.f2))
+                # msg('Insert line {} in file {}'.format(y, self.f2))
                 self.set_attribute(self.b_ed, x, y, nlen, COLOR_CHANGED_LINE)
             elif diff_id == '*-':
                 self.set_gap(self.a_ed, y, nlen)
             elif diff_id == '*+':
                 self.set_gap(self.b_ed, y, nlen)
             elif '++' in diff_id:
+                # print(diff_id, x, y, nlen)
                 self.set_attribute(self.b_ed, x, y, nlen, COLOR_DETAIL_ADD)
             elif '--' in diff_id:
+                # print(diff_id, x, y, nlen)
                 self.set_attribute(self.a_ed, x, y, nlen, COLOR_DETAIL_DEL)
 
     def _ed(self, f):
@@ -152,6 +154,7 @@ class Command:
                 return e
 
     def set_attribute(self, e, x, y, nlen, bg):
+        # print('set_attr', e, x, y, nlen, bg)
         e.attr(ct.MARKERS_ADD, DIFF_TAG,
                x,
                y,

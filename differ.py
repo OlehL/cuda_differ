@@ -76,9 +76,9 @@ class Differ(SequenceMatcher):
         for n in range(y1, y2+1):
             if n == y2:
                 if y1 == y2:
-                    yield (id+'1', x1, y1 + add, x2-x1)
+                    yield (id+'1', x1, y2 + add, x2-x1)
                 else:
-                    yield (id+'2', 0, y2 + add, x1)
+                    yield (id+'2', 0, y2 + add, x2)
             elif n == y1:
                 yield (id+'3', x1, y1 + add, len(text[y1])-x1)
             elif n < y2:
