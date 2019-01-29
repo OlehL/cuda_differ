@@ -62,43 +62,39 @@ def msg(s, level=0):
 class Command:
     def __init__(self):
         self.diff = Differ()
-        self.f1 = None
-        self.f2 = None
+        # self.f1 = None
+        # self.f2 = None
 
     def change_config(self):
         config()
         ct.file_open(INIFILE)
 
     def run(self):
-        uidiff = DifferDialog().run()
-        if None not in uidiff:
-            self.f1, self.f2 = uidiff
+        self.diff_dlg = DifferDialog().run()  # return (f1, f2)
+        if None not in self.diff_dlg:
             self.scroll = Scroll2Tab(__name__)
-            self.open_files(self.f1, self.f2)
+            self.open_files(*self.diff_dlg)
             self.refresh()
 
             # warning! next functions can broke editors nandle.
             self.a_ed.set_prop(ct.PROP_INDEX_GROUP, 0)
             self.b_ed.set_prop(ct.PROP_INDEX_GROUP, 1)
-            ct.file_open(self.f1, group=0)
-            ct.file_open(self.f2, group=1)
+            ct.file_open(self.diff_dlg[0], group=0)
+            ct.file_open(self.diff_dlg[1], group=1)
 
     def open_files(self, f1, f2):
         if ct.app_proc(ct.PROC_GET_GROUPING, '') == ct.GROUPS_ONE:
             ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_2VERT)
 
-        # group=0
         ct.file_open(f1, group=0)
         self.a_ed = self._ed(f1)
+        self.a_ed.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
         a = self.a_ed.get_text_all().splitlines(True)
 
-        # group=1
         ct.file_open(f2, group=1)
         self.b_ed = self._ed(f2)
-        b = self.b_ed.get_text_all().splitlines(True)
-
-        self.a_ed.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
         self.b_ed.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
+        b = self.b_ed.get_text_all().splitlines(True)
 
         self.diff.set_seqs(a, b)
 
@@ -119,31 +115,28 @@ class Command:
     def refresh(self):
         config()
         self.clear()
-        if not self.f1 or not self.f2:
+        if None in self.diff_dlg:
             return
 
         if self.diff.a == self.diff.b:
-            msg('The two files are identical.')
+            ct.msg_box('The two files are identical.', ct.MB_OK)
             return
 
         for d in self.diff.compare():
-            # print(d)
             diff_id, x, y, nlen = d
             if diff_id == '-':
-                # msg('Delete line {} in file {}'.format(y, self.f1))
+                # msg('Delete line {} in file {}'.format(y, self.diff_dlg[0]))
                 self.set_attribute(self.a_ed, x, y, nlen, COLOR_CHANGED)
             elif diff_id == '+':
-                # msg('Insert line {} in file {}'.format(y, self.f2))
+                # msg('Insert line {} in file {}'.format(y, self.diff_dlg[1]))
                 self.set_attribute(self.b_ed, x, y, nlen, COLOR_CHANGED)
             elif diff_id == '*-':
                 self.set_gap(self.a_ed, y, nlen)
             elif diff_id == '*+':
                 self.set_gap(self.b_ed, y, nlen)
             elif '++' in diff_id:
-                # print(diff_id, x, y, nlen)
                 self.set_attribute(self.b_ed, x, y, nlen, COLOR_ADDED)
             elif '--' in diff_id:
-                # print(diff_id, x, y, nlen)
                 self.set_attribute(self.a_ed, x, y, nlen, COLOR_DELETED)
 
     def _ed(self, f):
@@ -154,7 +147,6 @@ class Command:
                 return e
 
     def set_attribute(self, e, x, y, nlen, bg):
-        # print('set_attr', e, x, y, nlen, bg)
         e.attr(ct.MARKERS_ADD, DIFF_TAG,
                x,
                y,
@@ -165,7 +157,6 @@ class Command:
 
     def set_gap(self, e, row, n=1):
         "set gap line after row line"
-        # print('gap', e, row, n)
         _, h = e.get_prop(ct.PROP_CELL_SIZE)
         h_size = h * n - 2
         c = e.get_prop(ct.PROP_COLOR, ct.COLOR_ID_TextBg)

@@ -90,7 +90,6 @@ class DifferDialog:
                     )
 
         n = ct.dlg_proc(self.h, ct.DLG_CTL_ADD, 'combo')
-        # items = "\t".join(self.files)
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
                     prop={'name': 'f2_combo',
                           "items": items,

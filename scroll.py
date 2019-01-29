@@ -7,7 +7,6 @@ class Scroll2Tab:
     def __init__(self, name, tab_ids=[]):
         self.name = name
         self.tab_ids = tab_ids
-        # self.toggle()
 
     def toggle(self):
         ev = 'on_tab_change'
@@ -28,7 +27,6 @@ class Scroll2Tab:
             e.cmd(ct_cmd.cmd_RepaintEditor)
 
     def on_state(self, ed_self, state):
-        print(state, ct.APPSTATE_GROUPS)
         if state == ct.APPSTATE_GROUPS:
             self.toggle()
         if state == ct.EDSTATE_TAB_TITLE:

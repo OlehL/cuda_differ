@@ -19,7 +19,6 @@ class Differ(SequenceMatcher):
         """
         for tag, i1, i2, j1, j2 in self.get_opcodes():
             if tag != 'equal':
-                # print(tag, i1, i2, j1, j2)
                 for y in range(i1, i2):
                     yield ('-', 0, y, len(self.a[y]))
                 for y in range(j1, j2):
@@ -39,8 +38,6 @@ class Differ(SequenceMatcher):
         j = b[b1:b2]
         for tag, i1, i2, j1, j2 in \
                 SequenceMatcher(None, ''.join(i), ''.join(j)).get_opcodes():
-            # if tag != 'equal':
-            #     print(tag, i1, i2, j1, j2)
             if tag == 'insert':
                 yield from self._xy('++', j, j1, j2, b1)
             if tag == 'delete':
