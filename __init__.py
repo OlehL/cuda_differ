@@ -1,5 +1,5 @@
 ﻿import os
-from configparser import ConfigParser
+# from configparser import ConfigParser
 import json
 import cudatext as ct
 from .differ import Differ
@@ -10,43 +10,6 @@ from .ui import DifferDialog
 DIFF_TAG = 148
 GAP_WIDTH = 5000
 INIFILE = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'cuda_differ.ini')
-COLOR_CHANGED = 0x003030
-COLOR_ADDED = 0x124200
-COLOR_DELETED = 0x07003D
-
-
-def html_color_to_int(s):
-    """ Convert HTML color '#RRGGBB' or '#RGB' to int """
-    s = s.strip().lstrip('#')
-    slen = len(s)
-    if slen == 3:
-        return int(s[0]*2 + s[1]*2 + s[2]*2, 16)
-    elif slen == 6:
-        return int(s[4:6] + s[2:4] + s[0:2], 16)
-    else:
-        raise Exception('Incorrect color token: '+s)
-
-
-def config():
-    global COLOR_CHANGED
-    global COLOR_ADDED
-    global COLOR_DELETED
-    ini = ConfigParser()
-    if os.path.isfile(INIFILE):
-        ini.read(INIFILE, 'utf8')
-        COLOR_CHANGED = html_color_to_int(
-            ini.get('colors', 'changed'))
-        COLOR_ADDED = html_color_to_int(
-            ini.get('colors', 'added'))
-        COLOR_DELETED = html_color_to_int(
-            ini.get('colors', 'deleted'))
-    else:
-        ini['colors'] = {'changed': '#505000',
-                         'added': '#004212',
-                         'deleted': '#3D0007'
-                         }
-        with open(INIFILE, 'w', encoding='utf8') as configfile:
-            ini.write(configfile)
 
 
 def msg(s, level=0):
@@ -59,28 +22,45 @@ def msg(s, level=0):
         print(PLG_NAME + ' ERROR:', s)
 
 
+def get_color(color_id, key, default_color):
+    color = default_color
+    s = ct.ini_read(INIFILE, 'colors', key, '')
+    f = s.find('#') == 0
+    s = s.strip().lstrip('#')
+    slen = len(s)
+    if slen == 3 and f:
+        color = int(s[0]*2 + s[1]*2 + s[2]*2, 16)
+    elif slen == 6 and f:
+        color = int(s[4:6] + s[2:4] + s[0:2], 16)
+    else:
+        for i in ct.app_proc(ct.PROC_THEME_SYNTAX_DATA_GET, ''):
+            if i.get('name') == color_id:
+                color = i.get('color_back', default_color)
+                break
+    return color
+
+
 class Command:
     def __init__(self):
         self.diff = Differ()
-        # self.f1 = None
-        # self.f2 = None
+        self.files = [None, None]
 
     def change_config(self):
-        config()
+        self.config()
         ct.file_open(INIFILE)
 
     def run(self):
-        self.diff_dlg = DifferDialog().run()  # return (f1, f2)
-        if None not in self.diff_dlg:
+        self.files = DifferDialog().run()  # return (f1, f2)
+        if None not in self.files:
             self.scroll = Scroll2Tab(__name__)
-            self.open_files(*self.diff_dlg)
+            self.open_files(*self.files)
             self.refresh()
 
             # warning! next functions can broke editors nandle.
             self.a_ed.set_prop(ct.PROP_INDEX_GROUP, 0)
             self.b_ed.set_prop(ct.PROP_INDEX_GROUP, 1)
-            ct.file_open(self.diff_dlg[0], group=0)
-            ct.file_open(self.diff_dlg[1], group=1)
+            ct.file_open(self.files[0], group=0)
+            ct.file_open(self.files[1], group=1)
 
     def open_files(self, f1, f2):
         if ct.app_proc(ct.PROC_GET_GROUPING, '') == ct.GROUPS_ONE:
@@ -113,9 +93,9 @@ class Command:
         self.scroll.on_tab_change(ed_self)
 
     def refresh(self):
-        config()
+        self.config()
         self.clear()
-        if None in self.diff_dlg:
+        if None in self.files:
             return
 
         if self.diff.a == self.diff.b:
@@ -125,19 +105,19 @@ class Command:
         for d in self.diff.compare():
             diff_id, x, y, nlen = d
             if diff_id == '-':
-                # msg('Delete line {} in file {}'.format(y, self.diff_dlg[0]))
-                self.set_attribute(self.a_ed, x, y, nlen, COLOR_CHANGED)
+                # msg('Delete line {} in file {}'.format(y, self.files[0]))
+                self.set_attribute(self.a_ed, x, y, nlen, self.color_changed)
             elif diff_id == '+':
-                # msg('Insert line {} in file {}'.format(y, self.diff_dlg[1]))
-                self.set_attribute(self.b_ed, x, y, nlen, COLOR_CHANGED)
+                # msg('Insert line {} in file {}'.format(y, self.files[1]))
+                self.set_attribute(self.b_ed, x, y, nlen, self.color_changed)
             elif diff_id == '*-':
                 self.set_gap(self.a_ed, y, nlen)
             elif diff_id == '*+':
                 self.set_gap(self.b_ed, y, nlen)
             elif '++' in diff_id:
-                self.set_attribute(self.b_ed, x, y, nlen, COLOR_ADDED)
+                self.set_attribute(self.b_ed, x, y, nlen, self.color_added)
             elif '--' in diff_id:
-                self.set_attribute(self.a_ed, x, y, nlen, COLOR_DELETED)
+                self.set_attribute(self.a_ed, x, y, nlen, self.color_deleted)
 
     def _ed(self, f):
         "return editor object for f"
@@ -159,9 +139,8 @@ class Command:
         "set gap line after row line"
         _, h = e.get_prop(ct.PROP_CELL_SIZE)
         h_size = h * n - 2
-        c = e.get_prop(ct.PROP_COLOR, ct.COLOR_ID_TextBg)
         id_bitmap, id_canvas = e.gap(ct.GAP_MAKE_BITMAP, GAP_WIDTH, h_size)
-        ct.canvas_proc(id_canvas, ct.CANVAS_SET_BRUSH, color=c)
+        ct.canvas_proc(id_canvas, ct.CANVAS_SET_BRUSH, color=self.color_gaps)
         ct.canvas_proc(id_canvas, ct.CANVAS_SET_ANTIALIAS,
                        style=ct.ANTIALIAS_ON)
         ct.canvas_proc(id_canvas, ct.CANVAS_RECT_FILL,
@@ -177,3 +156,13 @@ class Command:
             e = ct.Editor(h)
             e.attr(ct.MARKERS_DELETE_BY_TAG, DIFF_TAG)
             e.gap(ct.GAP_DELETE_ALL, 0, 0)
+
+    def config(self):
+        if not os.path.exists(INIFILE):
+            ct.ini_write(INIFILE, 'colors', 'changed', '')
+            ct.ini_write(INIFILE, 'colors', 'added', '')
+            ct.ini_write(INIFILE, 'colors', 'deleted', '')
+        self.color_changed = get_color('LightBG2', 'changed', 0x003030)
+        self.color_added = get_color('LightBG3', 'added', 0x124200)
+        self.color_deleted = get_color('LightBG1', 'deleted', 0x07003D)
+        self.color_gaps = ct.ed.get_prop(ct.PROP_COLOR, ct.COLOR_ID_TextBg)
