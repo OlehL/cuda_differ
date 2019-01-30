@@ -51,7 +51,6 @@ class Command:
 
     def run(self):
         self.files = self.diff_dlg.run()
-        # self.files = DifferDialog().run()  # return (f1, f2)
         if self.files is None:
             return
 
@@ -59,32 +58,23 @@ class Command:
         self.open_files(*self.files)
         self.refresh()
 
-        # warning! next functions can broke editors nandle.
-        self.a_ed.set_prop(ct.PROP_INDEX_GROUP, 0)
-        self.b_ed.set_prop(ct.PROP_INDEX_GROUP, 1)
-        ct.file_open(self.files[0], group=0)
-        ct.file_open(self.files[1], group=1)
-
     def open_files(self, f1, f2):
         if ct.app_proc(ct.PROC_GET_GROUPING, '') == ct.GROUPS_ONE:
             ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_2VERT)
 
         def set_file(f, group=0):
+            if f in [ct.Editor(s).get_filename() for s in ct.ed_handles()]:
+                self._ed(f).set_prop(ct.PROP_INDEX_GROUP, group)
             ct.file_open(f, group)
-            ct.ed.set_prop(ct.PROP_INDEX_GROUP, group)
-            ct.ed.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
-            return ct.ed
+            e = self._ed(f)
+            e.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
+            return e
 
-        ct.file_open(f1, group=0)
-        self.a_ed = self._ed(f1)
-        self.a_ed.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
+        self.a_ed = set_file(f1, 0)
+        self.b_ed = set_file(f2, 1)
+
         a = self.a_ed.get_text_all().splitlines(True)
-
-        ct.file_open(f2, group=1)
-        self.b_ed = self._ed(f2)
-        self.b_ed.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
         b = self.b_ed.get_text_all().splitlines(True)
-
         self.diff.set_seqs(a, b)
 
         a_tab_id = self.a_ed.get_prop(ct.PROP_TAB_ID)
@@ -114,11 +104,11 @@ class Command:
         for d in self.diff.compare():
             diff_id, x, y, nlen = d
             if diff_id == '-':
-                # msg('Delete line {} in file {}'.format(y, self.files[0]))
+                msg('Delete line {} in file {}'.format(y, self.files[0]))
                 self.set_attribute(self.a_ed, x, y, nlen, self.color_changed)
                 self.set_decor(self.a_ed, y, '■', self.color_changed)
             elif diff_id == '+':
-                # msg('Insert line {} in file {}'.format(y, self.files[1]))
+                msg('Insert line {} in file {}'.format(y, self.files[1]))
                 self.set_attribute(self.b_ed, x, y, nlen, self.color_changed)
                 self.set_decor(self.b_ed, y, '■', self.color_changed)
             elif diff_id == '*-':
