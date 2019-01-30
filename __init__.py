@@ -1,5 +1,4 @@
 ﻿import os
-# from configparser import ConfigParser
 import json
 import cudatext as ct
 from .differ import Differ
@@ -107,21 +106,21 @@ class Command:
             if diff_id == '-':
                 # msg('Delete line {} in file {}'.format(y, self.files[0]))
                 self.set_attribute(self.a_ed, x, y, nlen, self.color_changed)
-                self.set_decor(self.a_ed, y, '*', self.color_changed)
+                self.set_decor(self.a_ed, y, '■', self.color_changed)
             elif diff_id == '+':
                 # msg('Insert line {} in file {}'.format(y, self.files[1]))
                 self.set_attribute(self.b_ed, x, y, nlen, self.color_changed)
-                self.set_decor(self.b_ed, y, '*', self.color_changed)
+                self.set_decor(self.b_ed, y, '■', self.color_changed)
             elif diff_id == '*-':
                 self.set_gap(self.a_ed, y, nlen)
             elif diff_id == '*+':
                 self.set_gap(self.b_ed, y, nlen)
             elif '++' in diff_id:
                 self.set_attribute(self.b_ed, x, y, nlen, self.color_added)
-                self.set_decor(self.b_ed, y, '+', self.color_added)
+                self.set_decor(self.b_ed, y, '■', self.color_added)
             elif '--' in diff_id:
                 self.set_attribute(self.a_ed, x, y, nlen, self.color_deleted)
-                self.set_decor(self.a_ed, y, '–', self.color_deleted)
+                self.set_decor(self.a_ed, y, '■', self.color_deleted)
 
     def _ed(self, f):
         "return editor object for f"
@@ -163,6 +162,7 @@ class Command:
             e = ct.Editor(h)
             e.attr(ct.MARKERS_DELETE_BY_TAG, DIFF_TAG)
             e.gap(ct.GAP_DELETE_ALL, 0, 0)
+            e.decor(ct.DECOR_DELETE_BY_TAG, tag=DIFF_TAG)
 
     def config(self):
         if not os.path.exists(INIFILE):
