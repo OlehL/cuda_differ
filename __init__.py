@@ -42,28 +42,38 @@ def get_color(color_id, key, default_color):
 class Command:
     def __init__(self):
         self.diff = Differ()
-        self.files = [None, None]
+        self.files = None
+        self.diff_dlg = DifferDialog()
 
     def change_config(self):
         self.config()
         ct.file_open(INIFILE)
 
     def run(self):
-        self.files = DifferDialog().run()  # return (f1, f2)
-        if None not in self.files:
-            self.scroll = Scroll2Tab(__name__)
-            self.open_files(*self.files)
-            self.refresh()
+        self.files = self.diff_dlg.run()
+        # self.files = DifferDialog().run()  # return (f1, f2)
+        if self.files is None:
+            return
 
-            # warning! next functions can broke editors nandle.
-            self.a_ed.set_prop(ct.PROP_INDEX_GROUP, 0)
-            self.b_ed.set_prop(ct.PROP_INDEX_GROUP, 1)
-            ct.file_open(self.files[0], group=0)
-            ct.file_open(self.files[1], group=1)
+        self.scroll = Scroll2Tab(__name__)
+        self.open_files(*self.files)
+        self.refresh()
+
+        # warning! next functions can broke editors nandle.
+        self.a_ed.set_prop(ct.PROP_INDEX_GROUP, 0)
+        self.b_ed.set_prop(ct.PROP_INDEX_GROUP, 1)
+        ct.file_open(self.files[0], group=0)
+        ct.file_open(self.files[1], group=1)
 
     def open_files(self, f1, f2):
         if ct.app_proc(ct.PROC_GET_GROUPING, '') == ct.GROUPS_ONE:
             ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_2VERT)
+
+        def set_file(f, group=0):
+            ct.file_open(f, group)
+            ct.ed.set_prop(ct.PROP_INDEX_GROUP, group)
+            ct.ed.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
+            return ct.ed
 
         ct.file_open(f1, group=0)
         self.a_ed = self._ed(f1)
@@ -94,7 +104,7 @@ class Command:
     def refresh(self):
         self.config()
         self.clear()
-        if None in self.files:
+        if self.files is None:
             return
 
         if self.diff.a == self.diff.b:

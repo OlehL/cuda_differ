@@ -12,23 +12,27 @@ def center_ct():
 
 class DifferDialog:
     def __init__(self):
-        self._f1 = None
-        self._f2 = None
-        self.files = []
-        for h in ct.ed_handles():
-            e = ct.Editor(h)
-            f = e.get_filename().lower()
-            if os.path.isfile(f):
-                self.files.append(f)
+        self.f1 = None
+        self.f2 = None
+        self.history_opened = []
 
     def run(self):
-        dlg = self.dialog()
+        self.ready = False
+        open_files = set()
+        for h in ct.ed_handles():
+            e = ct.Editor(h)
+            f = e.get_filename()
+            if os.path.isfile(f):
+                open_files.add(os.path.abspath(f))
+        items = "\t".join({*open_files, *self.history_opened})
+
+        dlg = self.dialog(items)
         ct.dlg_proc(dlg, ct.DLG_SHOW_MODAL)
         ct.dlg_proc(dlg, ct.DLG_FREE)
-        return (self._f1, self._f2)
+        if self.ready:
+            return (self.f1, self.f2)
 
-    def dialog(self):
-        items = "\t".join(self.files)
+    def dialog(self, items):
 
         self.h = ct.dlg_proc(0, ct.DLG_CREATE)
         ct.dlg_proc(self.h, ct.DLG_PROP_SET,
@@ -59,7 +63,7 @@ class DifferDialog:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
                     prop={'name': 'f1_combo',
                           "items": items,
-                          'val': '',
+                          'val': self.f1,
                           'x': 8,
                           'y': 24,
                           'w': 447
@@ -93,7 +97,7 @@ class DifferDialog:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
                     prop={'name': 'f2_combo',
                           "items": items,
-                          'val': '',
+                          'val': self.f2,
                           'x': 8,
                           'y': 72,
                           'w': 447
@@ -174,15 +178,15 @@ class DifferDialog:
             set_cap('f2_label', 'Second file:')
 
         if os.path.isfile(f1) and os.path.isfile(f2):
-            self._f1, self._f2 = f1, f2
+            self.ready = True
+            self.f1, self.f2 = os.path.abspath(f1), os.path.abspath(f2)
+            if self.f1 not in self.history_opened:
+                self.history_opened.append(self.f1)
+            if self.f2 not in self.history_opened:
+                self.history_opened.append(self.f2)
+            if len(self.history_opened) > 24:
+                self.history_opened = self.history_opened[-24:]
             ct.dlg_proc(id_dlg, ct.DLG_HIDE)
-            return (f1, f2)
 
     def press_exit(self, id_dlg, id_ctl, data='', info=''):
         ct.dlg_proc(id_dlg, ct.DLG_HIDE)
-
-    def files(self):
-        if self._f1 and self._f2:
-            return (self._f1, self._f2)
-        else:
-            return None
