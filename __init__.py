@@ -7,6 +7,7 @@ from .ui import DifferDialog
 
 
 DIFF_TAG = 148
+NKIND_CHANGED = 26
 GAP_WIDTH = 5000
 INIFILE = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'cuda_differ.ini')
 
@@ -55,10 +56,7 @@ class Command:
             return
 
         self.scroll = Scroll2Tab(__name__)
-        self.open_files(*self.files)
-        self.refresh()
 
-    def open_files(self, f1, f2):
         if ct.app_proc(ct.PROC_GET_GROUPING, '') == ct.GROUPS_ONE:
             ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_2VERT)
 
@@ -70,8 +68,8 @@ class Command:
             e.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
             return e
 
-        self.a_ed = set_file(f1, 0)
-        self.b_ed = set_file(f2, 1)
+        self.a_ed = set_file(self.files[0], 0)
+        self.b_ed = set_file(self.files[1], 1)
 
         a = self.a_ed.get_text_all().splitlines(True)
         b = self.b_ed.get_text_all().splitlines(True)
@@ -80,6 +78,7 @@ class Command:
         a_tab_id = self.a_ed.get_prop(ct.PROP_TAB_ID)
         b_tab_id = self.b_ed.get_prop(ct.PROP_TAB_ID)
         self.scroll.tab_ids = [a_tab_id, b_tab_id]
+        self.refresh()
 
     def on_scroll(self, ed_self):
         self.scroll.on_scroll(ed_self)
@@ -105,11 +104,13 @@ class Command:
             diff_id, x, y, nlen = d
             if diff_id == '-':
                 msg('Delete line {} in file {}'.format(y, self.files[0]))
-                self.set_attribute(self.a_ed, x, y, nlen, self.color_changed)
+                # self.set_attribute(self.a_ed, x, y, nlen, self.color_changed)
+                self.set_bookmark2(self.a_ed, y, self.color_changed)
                 self.set_decor(self.a_ed, y, '■', self.color_changed)
             elif diff_id == '+':
                 msg('Insert line {} in file {}'.format(y, self.files[1]))
-                self.set_attribute(self.b_ed, x, y, nlen, self.color_changed)
+                # self.set_attribute(self.b_ed, x, y, nlen, self.color_changed)
+                self.set_bookmark2(self.b_ed, y, self.color_changed)
                 self.set_decor(self.b_ed, y, '■', self.color_changed)
             elif diff_id == '*-':
                 self.set_gap(self.a_ed, y, nlen)
@@ -157,12 +158,23 @@ class Command:
     def set_decor(self, e, row, text, color):
         e.decor(ct.DECOR_SET, row, DIFF_TAG, text, color, bold=True)
 
+    def set_bookmark2(self, e, row, bg):
+        e.bookmark(ct.BOOKMARK2_SET, row,
+                   nkind=NKIND_CHANGED,
+                   ncolor=bg,
+                   text="",
+                   auto_del=True,
+                   show=False,
+                   tag=DIFF_TAG
+                   )
+
     def clear(self):
         for h in ct.ed_handles():
             e = ct.Editor(h)
             e.attr(ct.MARKERS_DELETE_BY_TAG, DIFF_TAG)
             e.gap(ct.GAP_DELETE_ALL, 0, 0)
             e.decor(ct.DECOR_DELETE_BY_TAG, tag=DIFF_TAG)
+            e.bookmark(ct.BOOKMARK2_DELETE_BY_TAG, 0, tag=DIFF_TAG)
 
     def config(self):
         if not os.path.exists(INIFILE):
@@ -175,9 +187,13 @@ class Command:
         self.color_added = get_color('LightBG3', 'added', 0x124200)
         self.color_deleted = get_color('LightBG1', 'deleted', 0x07003D)
         self.color_gaps = ct.ed.get_prop(ct.PROP_COLOR, ct.COLOR_ID_TextBg)
+
         on = ct.ini_read(INIFILE, 'config',
                          'enable_scroll2tab_default', 'true').lower()
-        if 'true' in on:
-            self.enable_scroll2tab = True
-        else:
-            self.enable_scroll2tab = False
+        self.enable_scroll2tab = True if 'true' in on else False
+
+        ct.ed.bookmark(ct.BOOKMARK_SETUP, 0,
+                       nkind=NKIND_CHANGED,
+                       ncolor=self.color_changed,
+                       text=''
+                       )
