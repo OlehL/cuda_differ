@@ -80,7 +80,6 @@ class Command:
         a_tab_id = self.a_ed.get_prop(ct.PROP_TAB_ID)
         b_tab_id = self.b_ed.get_prop(ct.PROP_TAB_ID)
         self.scroll.tab_ids = [a_tab_id, b_tab_id]
-        self.scroll.toggle()
 
     def on_scroll(self, ed_self):
         self.scroll.on_scroll(ed_self)
@@ -94,6 +93,7 @@ class Command:
     def refresh(self):
         self.config()
         self.clear()
+        self.scroll.toggle(self.enable_scroll2tab)
         if self.files is None:
             return
 
@@ -169,7 +169,15 @@ class Command:
             ct.ini_write(INIFILE, 'colors', 'changed', '')
             ct.ini_write(INIFILE, 'colors', 'added', '')
             ct.ini_write(INIFILE, 'colors', 'deleted', '')
+            ct.ini_write(INIFILE, 'config',
+                         'enable_scroll2tab_default', 'true')
         self.color_changed = get_color('LightBG2', 'changed', 0x003030)
         self.color_added = get_color('LightBG3', 'added', 0x124200)
         self.color_deleted = get_color('LightBG1', 'deleted', 0x07003D)
         self.color_gaps = ct.ed.get_prop(ct.PROP_COLOR, ct.COLOR_ID_TextBg)
+        on = ct.ini_read(INIFILE, 'config',
+                         'enable_scroll2tab_default', 'true').lower()
+        if 'true' in on:
+            self.enable_scroll2tab = True
+        else:
+            self.enable_scroll2tab = False
