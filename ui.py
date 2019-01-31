@@ -4,9 +4,9 @@ import cudatext as ct
 
 def center_ct():
     """get coordinates (x, y) of center CudaText"""
-    xy = ct.app_proc(ct.PROC_COORD_WINDOW_GET, "")
-    x = int((xy[2]-xy[0])/2+xy[0])
-    y = int((xy[3]-xy[1])/2+xy[1])
+    x1, y1, x2, y2 = ct.app_proc(ct.PROC_COORD_WINDOW_GET, "")
+    x = (x1+x2)//2
+    y = (y1+y2)//2
     return (x, y)
 
 
