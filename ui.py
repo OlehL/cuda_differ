@@ -42,9 +42,6 @@ class DifferDialog:
                           'w': 545,
                           'h': 145,
                           'resize': False,
-                          'w_min': 100,
-                          'h_min': 100,
-                          'topmost': True
                           }
                     )
 
