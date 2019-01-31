@@ -26,6 +26,12 @@ class DifferDialog:
                 open_files.add(os.path.abspath(f))
         items = "\t".join({*open_files, *self.history_opened})
 
+        if ct.app_proc(ct.PROC_GET_GROUPING, '') is not ct.GROUPS_ONE:
+            f1 = ct.ed_group(0).get_filename()
+            f2 = ct.ed_group(1).get_filename()
+            self.f1 = f1 if os.path.exists(f1) else None
+            self.f2 = f2 if os.path.exists(f2) else None
+
         dlg = self.dialog(items)
         ct.dlg_proc(dlg, ct.DLG_SHOW_MODAL)
         ct.dlg_proc(dlg, ct.DLG_FREE)

@@ -9,11 +9,14 @@ class Scroll2Tab:
         self.tab_ids = tab_ids
 
     def toggle(self, on=True):
-        ev = 'on_tab_change'
-        grp = [ct.GROUPS_2HORZ, ct.GROUPS_2VERT]
-        if on and ct.app_proc(ct.PROC_GET_GROUPING, '') in grp:
-            if ct.ed.get_prop(ct.PROP_TAB_ID) in self.tab_ids:
-                ev = 'on_scroll,on_state,on_tab_change'
+        if on:
+            ev = 'on_tab_change'
+            grp = [ct.GROUPS_2HORZ, ct.GROUPS_2VERT]
+            if ct.app_proc(ct.PROC_GET_GROUPING, '') in grp:
+                if ct.ed.get_prop(ct.PROP_TAB_ID) in self.tab_ids:
+                    ev = 'on_scroll,on_state,on_tab_change'
+        else:
+            ev = ''
         ct.app_proc(ct.PROC_SET_EVENTS, self.name+';'+ev+';;')
 
     def on_scroll(self, ed_self):
