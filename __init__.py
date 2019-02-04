@@ -131,20 +131,24 @@ class Command:
                 self.set_decor(b_ed, y, '■', self.color_added)
             elif diff_id == '-*':
                 self.set_bookmark2(a_ed, y, NKIND_CHANGED)
-                self.set_decor(a_ed, y, '■', self.color_changed)
             elif diff_id == '+*':
                 self.set_bookmark2(b_ed, y, NKIND_CHANGED)
-                self.set_decor(b_ed, y, '■', self.color_changed)
             elif diff_id == '-^':
                 self.set_gap(a_ed, y, d[2])
             elif diff_id == '+^':
                 self.set_gap(b_ed, y, d[2])
-            elif '++' in diff_id:
+            elif diff_id == '++':
                 self.set_attr(b_ed, d[2], y, d[3], self.color_added)
-                self.set_decor(b_ed, y, '■', self.color_added)
-            elif '--' in diff_id:
+            elif diff_id == '--':
                 self.set_attr(a_ed, d[2], y, d[3], self.color_deleted)
+            elif diff_id == '-y':
+                self.set_decor(a_ed, y, '■', self.color_changed)
+            elif diff_id == '+y':
+                self.set_decor(b_ed, y, '■', self.color_changed)
+            elif diff_id == '-r':
                 self.set_decor(a_ed, y, '■', self.color_deleted)
+            elif diff_id == '+g':
+                self.set_decor(b_ed, y, '■', self.color_added)
 
     def set_attr(self, e, x, y, nlen, bg):
         e.attr(ct.MARKERS_ADD, DIFF_TAG,
