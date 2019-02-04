@@ -92,23 +92,36 @@ class Command:
         self.scroll.on_scroll(ed_self)
 
     def on_tab_change(self, ed_self):
+        self.config()
         self.scroll.toggle(self.enable_scroll)
 
     def refresh(self):
-        hndl_primary = ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY)
-        hndl_secondary = ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY)
-        a_ed = ct.Editor(hndl_primary)
-        b_ed = ct.Editor(hndl_secondary)
-        if a_ed.get_filename() == b_ed.get_filename():
+        if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
+            return
+
+        a_ed = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY))
+        b_ed = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY))
+
+        a_file, b_file = a_ed.get_filename(), b_ed.get_filename()
+        if a_file == b_file:
             return
 
         a_text_all = a_ed.get_text_all()
         b_text_all = b_ed.get_text_all()
-        if b_text_all == '' or a_text_all == '':
+
+        if a_text_all == '':
+            t = 'The file:\n{}\nis empty.'.format(a_file)
+            ct.msg_box(t, ct.MB_OK)
+            return
+
+        if b_text_all == '':
+            t = 'The file:\n{}\nis empty.'.format(b_file)
+            ct.msg_box(t, ct.MB_OK)
             return
 
         if a_text_all == b_text_all:
-            ct.msg_box('The two files are identical.', ct.MB_OK)
+            t = 'The files are identical:\n{0}\n{1}'.format(a_file, b_file)
+            ct.msg_box(t, ct.MB_OK)
             return
 
         self.clear(a_ed)
@@ -209,7 +222,6 @@ class Command:
 
         on = ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '1')
         self.enable_scroll = on=='1'
-        print(self.enable_scroll)
 
         def new_nkind(val, color):
             ct.ed.bookmark(ct.BOOKMARK_SETUP, 0,
