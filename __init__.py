@@ -201,15 +201,15 @@ class Command:
             ct.ini_write(INIFILE, 'colors', 'added', '')
             ct.ini_write(INIFILE, 'colors', 'deleted', '')
             ct.ini_write(INIFILE, 'config',
-                         'enable_scroll_default', 'true')
+                         'enable_scroll_default', '1')
         self.color_changed = get_color('LightBG2', 'changed', 0x003030)
         self.color_added = get_color('LightBG3', 'added', 0x124200)
         self.color_deleted = get_color('LightBG1', 'deleted', 0x07003D)
         self.color_gaps = ct.ed.get_prop(ct.PROP_COLOR, ct.COLOR_ID_TextBg)
 
-        on = ct.ini_read(INIFILE, 'config',
-                         'enable_scroll_default', 'true').lower()
-        self.enable_scroll = True if 'true' in on else False
+        on = ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '1')
+        self.enable_scroll = on=='1'
+        print(self.enable_scroll)
 
         def new_nkind(val, color):
             ct.ed.bookmark(ct.BOOKMARK_SETUP, 0,
