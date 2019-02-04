@@ -1,82 +1,113 @@
-from difflib import SequenceMatcher
+from difflib import SequenceMatcher, _count_leading
 
 
-class Differ(SequenceMatcher):
-
+class Differ:
+    """
+    compare function return tuples for paint text
+    id can be:
+          - paint deleted line in file a
+              return (id, y)
+          + paint added line in file b
+              return (id, y)
+    -* / +* paint changed line in file a / b
+              return (id, y)
+    -^ / +^ gap in file a / b
+              return (id, y, nline)
+         -- detail paint deleted symbols in file a
+         ++ detail paint added symbols in file b
+              return (id, y, x, nlen)
+    """
     def __init__(self, a='', b=''):
-        super().__init__(None, a, b)
+        self.a = a
+        self.b = b
+        self.diff = SequenceMatcher(None, a, b)
+
+    def set_seqs(self, a, b):
+        self.a = a
+        self.b = b
+        self.diff.set_seqs(a, b)
 
     def compare(self):
-        """
-        return tuple (id, x, y, nlen)
-            id can be:
-                - paint file a
-                + paint file b
-                *- gap file a
-                *+ gap file b
-                ++ detail paint file a
-                -- detail paint file b
-        """
-        for tag, i1, i2, j1, j2 in self.get_opcodes():
-            if tag != 'equal':
-                for y in range(i1, i2):
-                    yield ('-', 0, y, len(self.a[y]))
-                for y in range(j1, j2):
-                    yield ('+', 0, y, len(self.b[y]))
-                i, j = i2 - i1, j2 - j1
-                if i < j:
-                    n = j - i
-                    yield ('*-', 0, i2, n)
-                if i > j:
-                    n = i - j
-                    yield ('*+', 0, j2, n)
-
-                yield from self.detail_match(self.a, i1, i2, self.b, j1, j2)
-
-    def detail_match(self, a, a1, a2, b, b1, b2):
-        i = a[a1:a2]
-        j = b[b1:b2]
-        for tag, i1, i2, j1, j2 in \
-                SequenceMatcher(None, ''.join(i), ''.join(j)).get_opcodes():
-            if tag == 'insert':
-                yield from self._xy('++', j, j1, j2, b1)
+        diff = SequenceMatcher(None, self.a, self.b)
+        for tag, i1, i2, j1, j2 in diff.get_opcodes():
+            delta = abs(i1-i2-j1+j2)
             if tag == 'delete':
-                yield from self._xy('--', i, i1, i2, a1)
-            if tag == 'replace':
-                yield from self._xy('--', i, i1, i2, a1)
-                yield from self._xy('++', j, j1, j2, b1)
+                yield ('+^', j2, delta)
+                for y in range(i1, i2):
+                    yield ('-', y)
+            elif tag == 'insert':
+                yield ('-^', i2, delta)
+                for y in range(j1, j2):
+                    yield ('+', y)
+            elif tag == 'replace':
+                yield from self._fancy_replace(self.a, i1, i2, self.b, j1, j2)
 
-    def _xy(self, id, text, start, end, add):
-        """
-        input:
-        text - list of str
-        start, end - int pos in joined text
+    def _fancy_replace(self, a, alo, ahi, b, blo, bhi):
+        best_ratio, cutoff = 0.74, 0.75
+        diff = SequenceMatcher(None)
+        eqi, eqj = None, None
+        for j in range(blo, bhi):
+            bj = b[j]
+            diff.set_seq2(bj)
+            for i in range(alo, ahi):
+                ai = a[i]
+                if ai == bj:
+                    if eqi is None:
+                        eqi, eqj = i, j
+                    continue
+                diff.set_seq1(ai)
+                if diff.real_quick_ratio() > best_ratio and \
+                        diff.quick_ratio() > best_ratio and \
+                        diff.ratio() > best_ratio:
+                    best_ratio, best_i, best_j = diff.ratio(), i, j
+        if best_ratio < cutoff:
+            if eqi is None:
+                yield from self._plain_replace(a, alo, ahi, b, blo, bhi)
+                return
+            best_i, best_j, best_ratio = eqi, eqj, 1.0
+        else:
+            eqi = None
+        yield from self._fancy_helper(a, alo, best_i, b, blo, best_j)
+        aelt, belt = a[best_i], b[best_j]
+        if eqi is None:
+            atags = btags = ""
+            diff.set_seqs(aelt, belt)
+            for tag, ai1, ai2, bj1, bj2 in diff.get_opcodes():
+                la, lb = ai2 - ai1, bj2 - bj1
+                if tag != 'equal':
+                    yield ('-*', best_i)
+                    yield ('+*', best_j)
+                if tag == 'delete':
+                    yield ('--', best_i, ai1, la)
+                elif tag == 'insert':
+                    yield ('++', best_j, bj1, lb)
+                elif tag == 'replace':
+                    yield ('--', best_i, ai1, la)
+                    yield ('++', best_j, bj1, lb)
+        yield from self._fancy_helper(a, best_i+1, ahi, b, best_j+1, bhi)
 
-        return tuple (id, x, y, nlen)
-            id can be:
-                - paint file a
-                + paint file b
-                *- gap file a
-                *+ gap file b
-        """
-        def get_xy(text, pos):
-            "return text pos like (x, y)"
-            for n, l in enumerate(text):
-                ln = len(l)
-                if pos <= ln:
-                    return (pos, n)
-                else:
-                    pos -= ln
+    def _fancy_helper(self, a, alo, ahi, b, blo, bhi):
+        if alo < ahi:
+            if blo < bhi:
+                yield from self._fancy_replace(a, alo, ahi, b, blo, bhi)
+            else:
+                if ahi-alo > 0:
+                    yield ('+^', blo, ahi-alo)
+                for y in range(alo, ahi):
+                    yield ('-', y)
+        elif blo < bhi:
+            if bhi-blo > 0:
+                yield ('-^', ahi, bhi-blo)
+            for y in range(blo, bhi):
+                    yield ('+', y)
 
-        x1, y1 = get_xy(text, start)
-        x2, y2 = get_xy(text, end)
-        for n in range(y1, y2+1):
-            if n == y2:
-                if y1 == y2:
-                    yield (id+'1', x1, y2 + add, x2-x1)
-                else:
-                    yield (id+'2', 0, y2 + add, x2)
-            elif n == y1:
-                yield (id+'3', x1, y1 + add, len(text[y1])-x1)
-            elif n < y2:
-                yield (id+'4', 0, n + add, len(text[n]))
+    def _plain_replace(self, a, alo, ahi, b, blo, bhi):
+        da, db = ahi-alo, bhi-blo
+        if da > db:
+            yield ('+^', bhi, da-db)
+        elif db > da:
+            yield ('-^', ahi, db-da)
+        for y in range(blo, bhi):
+            yield ('+', y)
+        for y in range(alo, ahi):
+            yield ('-', y)

@@ -8,7 +8,7 @@ homepage=https://github.com/OlehL/cuda_differ
 [item1]
 section=commands
 caption=Differ\Choose files...
-method=run
+method=choose_files
 
 [item2]
 section=commands
@@ -20,4 +20,3 @@ section=commands
 caption=Differ\Config
 method=change_config
 menu=o
-

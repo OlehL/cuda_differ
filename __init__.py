@@ -1,12 +1,15 @@
 ﻿import os
 import json
 import cudatext as ct
+import cudatext_cmd as ct_cmd
 from .differ import Differ
-from .scroll import Scroll2Tab
+from .scroll import ScrollSplittedTab
 from .ui import DifferDialog
 
 
 DIFF_TAG = 148
+NKIND_DELETED = 24
+NKIND_ADDED = 25
 NKIND_CHANGED = 26
 GAP_WIDTH = 5000
 INIFILE = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'cuda_differ.ini')
@@ -43,94 +46,107 @@ def get_color(color_id, key, default_color):
 class Command:
     def __init__(self):
         self.diff = Differ()
-        self.files = None
         self.diff_dlg = DifferDialog()
+        self.scroll = ScrollSplittedTab(__name__)
 
     def change_config(self):
         self.config()
         ct.file_open(INIFILE)
 
-    def run(self):
-        self.files = self.diff_dlg.run()
-        if self.files is None:
+    def choose_files(self):
+        files = self.diff_dlg.run()
+        if files is None:
             return
 
-        self.scroll = Scroll2Tab(__name__)
+        for f in files:
+            for h in ct.ed_handles():
+                e = ct.Editor(h)
+                file_name = e.get_filename()
+                if file_name == f:
+                    if e.get_prop(ct.PROP_MODIFIED):
+                        text = 'First you must save file:\n' + \
+                                file_name + \
+                               '\nYES-save and continue\n' + \
+                               "NO-don't save (changes will be lost)"
+                        mb = ct.msg_box(text,
+                                        ct.MB_YESNOCANCEL+ct.MB_ICONQUESTION)
+                        if mb == ct.ID_YES:
+                            e.save(file_name)
+                        elif mb == ct.ID_NO:
+                            e.set_prop(ct.PROP_MODIFIED, False)
+                        else:
+                            return
+                    e.focus()
+                    e.cmd(ct_cmd.cmd_FileClose)
+                    break
 
-        if ct.app_proc(ct.PROC_GET_GROUPING, '') == ct.GROUPS_ONE:
-            ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_2VERT)
+        ct.file_open(files)
+        a = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY))
+        b = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY))
+        a.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
+        b.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
 
-        def set_file(f, group=0):
-            if f in [ct.Editor(s).get_filename() for s in ct.ed_handles()]:
-                self._ed(f).set_prop(ct.PROP_INDEX_GROUP, group)
-            ct.file_open(f, group)
-            e = self._ed(f)
-            e.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
-            return e
-
-        self.a_ed = set_file(self.files[0], 0)
-        self.b_ed = set_file(self.files[1], 1)
-
-        a = self.a_ed.get_text_all().splitlines(True)
-        b = self.b_ed.get_text_all().splitlines(True)
-        self.diff.set_seqs(a, b)
-
-        a_tab_id = self.a_ed.get_prop(ct.PROP_TAB_ID)
-        b_tab_id = self.b_ed.get_prop(ct.PROP_TAB_ID)
-        self.scroll.tab_ids = [a_tab_id, b_tab_id]
         self.refresh()
 
     def on_scroll(self, ed_self):
         self.scroll.on_scroll(ed_self)
 
-    def on_state(self, ed_self, state):
-        self.scroll.on_state(ed_self, state)
-
     def on_tab_change(self, ed_self):
-        self.scroll.on_tab_change(ed_self)
+        self.scroll.toggle(self.enable_scroll)
 
     def refresh(self):
-        self.config()
-        self.clear()
-        self.scroll.toggle(self.enable_scroll2tab)
-        if self.files is None:
+        hndl_primary = ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY)
+        hndl_secondary = ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY)
+        a_ed = ct.Editor(hndl_primary)
+        b_ed = ct.Editor(hndl_secondary)
+        if a_ed.get_filename() == b_ed.get_filename():
             return
 
-        if self.diff.a == self.diff.b:
+        a_text_all = a_ed.get_text_all()
+        b_text_all = b_ed.get_text_all()
+        if b_text_all == '' or a_text_all == '':
+            return
+
+        if a_text_all == b_text_all:
             ct.msg_box('The two files are identical.', ct.MB_OK)
             return
 
+        self.clear(a_ed)
+        self.clear(b_ed)
+        self.config()
+
+        self.diff.set_seqs(a_text_all.splitlines(True),
+                           b_text_all.splitlines(True))
+
+        self.scroll.tab_id.add(ct.ed.get_prop(ct.PROP_TAB_ID))
+        self.scroll.toggle(self.enable_scroll)
+
         for d in self.diff.compare():
-            diff_id, x, y, nlen = d
+            diff_id, y = d[0], d[1]
             if diff_id == '-':
-                msg('Delete line {} in file {}'.format(y, self.files[0]))
-                # self.set_attribute(self.a_ed, x, y, nlen, self.color_changed)
-                self.set_bookmark2(self.a_ed, y, self.color_changed)
-                self.set_decor(self.a_ed, y, '■', self.color_changed)
+                self.set_bookmark2(a_ed, y, NKIND_DELETED)
+                self.set_decor(a_ed, y, '■', self.color_deleted)
             elif diff_id == '+':
-                msg('Insert line {} in file {}'.format(y, self.files[1]))
-                # self.set_attribute(self.b_ed, x, y, nlen, self.color_changed)
-                self.set_bookmark2(self.b_ed, y, self.color_changed)
-                self.set_decor(self.b_ed, y, '■', self.color_changed)
-            elif diff_id == '*-':
-                self.set_gap(self.a_ed, y, nlen)
-            elif diff_id == '*+':
-                self.set_gap(self.b_ed, y, nlen)
+                self.set_bookmark2(b_ed, y, NKIND_ADDED)
+                self.set_decor(b_ed, y, '■', self.color_added)
+            elif diff_id == '-*':
+                self.set_bookmark2(a_ed, y, NKIND_CHANGED)
+                self.set_decor(a_ed, y, '■', self.color_changed)
+            elif diff_id == '+*':
+                self.set_bookmark2(b_ed, y, NKIND_CHANGED)
+                self.set_decor(b_ed, y, '■', self.color_changed)
+            elif diff_id == '-^':
+                self.set_gap(a_ed, y, d[2])
+            elif diff_id == '+^':
+                self.set_gap(b_ed, y, d[2])
             elif '++' in diff_id:
-                self.set_attribute(self.b_ed, x, y, nlen, self.color_added)
-                self.set_decor(self.b_ed, y, '■', self.color_added)
+                self.set_attr(b_ed, d[2], y, d[3], self.color_added)
+                self.set_decor(b_ed, y, '■', self.color_added)
             elif '--' in diff_id:
-                self.set_attribute(self.a_ed, x, y, nlen, self.color_deleted)
-                self.set_decor(self.a_ed, y, '■', self.color_deleted)
+                self.set_attr(a_ed, d[2], y, d[3], self.color_deleted)
+                self.set_decor(a_ed, y, '■', self.color_deleted)
 
-    def _ed(self, f):
-        "return editor object for f"
-        for h in ct.ed_handles():
-            e = ct.Editor(h)
-            if f.lower() == e.get_filename().lower():
-                return e
-
-    def set_attribute(self, e, x, y, nlen, bg):
+    def set_attr(self, e, x, y, nlen, bg):
         e.attr(ct.MARKERS_ADD, DIFF_TAG,
                x,
                y,
@@ -158,23 +174,22 @@ class Command:
     def set_decor(self, e, row, text, color):
         e.decor(ct.DECOR_SET, row, DIFF_TAG, text, color, bold=True)
 
-    def set_bookmark2(self, e, row, bg):
+    def set_bookmark2(self, e, row, nk):
         e.bookmark(ct.BOOKMARK2_SET, row,
-                   nkind=NKIND_CHANGED,
-                   ncolor=bg,
+                   nkind=nk,
                    text="",
                    auto_del=True,
                    show=False,
                    tag=DIFF_TAG
                    )
 
-    def clear(self):
-        for h in ct.ed_handles():
-            e = ct.Editor(h)
-            e.attr(ct.MARKERS_DELETE_BY_TAG, DIFF_TAG)
-            e.gap(ct.GAP_DELETE_ALL, 0, 0)
-            e.decor(ct.DECOR_DELETE_BY_TAG, tag=DIFF_TAG)
-            e.bookmark(ct.BOOKMARK2_DELETE_BY_TAG, 0, tag=DIFF_TAG)
+    def clear(self, e):
+        if e is None:
+            return
+        e.attr(ct.MARKERS_DELETE_BY_TAG, DIFF_TAG)
+        e.gap(ct.GAP_DELETE_ALL, 0, 0)
+        e.decor(ct.DECOR_DELETE_BY_TAG, tag=DIFF_TAG)
+        e.bookmark(ct.BOOKMARK2_DELETE_BY_TAG, 0, tag=DIFF_TAG)
 
     def config(self):
         if not os.path.exists(INIFILE):
@@ -182,18 +197,23 @@ class Command:
             ct.ini_write(INIFILE, 'colors', 'added', '')
             ct.ini_write(INIFILE, 'colors', 'deleted', '')
             ct.ini_write(INIFILE, 'config',
-                         'enable_scroll2tab_default', 'true')
+                         'enable_scroll_default', 'true')
         self.color_changed = get_color('LightBG2', 'changed', 0x003030)
         self.color_added = get_color('LightBG3', 'added', 0x124200)
         self.color_deleted = get_color('LightBG1', 'deleted', 0x07003D)
         self.color_gaps = ct.ed.get_prop(ct.PROP_COLOR, ct.COLOR_ID_TextBg)
 
         on = ct.ini_read(INIFILE, 'config',
-                         'enable_scroll2tab_default', 'true').lower()
-        self.enable_scroll2tab = True if 'true' in on else False
+                         'enable_scroll_default', 'true').lower()
+        self.enable_scroll = True if 'true' in on else False
 
-        ct.ed.bookmark(ct.BOOKMARK_SETUP, 0,
-                       nkind=NKIND_CHANGED,
-                       ncolor=self.color_changed,
-                       text=''
-                       )
+        def new_nkind(val, color):
+            ct.ed.bookmark(ct.BOOKMARK_SETUP, 0,
+                           nkind=val,
+                           ncolor=color,
+                           text=''
+                           )
+
+        new_nkind(NKIND_DELETED, self.color_deleted)
+        new_nkind(NKIND_ADDED, self.color_added)
+        new_nkind(NKIND_CHANGED, self.color_changed)
