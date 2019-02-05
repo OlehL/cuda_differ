@@ -1,5 +1,4 @@
 ﻿import os
-import json
 import cudatext as ct
 import cudatext_cmd as ct_cmd
 from .differ import Differ
@@ -81,11 +80,6 @@ class Command:
                     break
 
         ct.file_open(files)
-        a = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY))
-        b = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY))
-        a.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
-        b.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
-
         self.refresh()
 
     def on_scroll(self, ed_self):
@@ -101,8 +95,8 @@ class Command:
 
         a_ed = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY))
         b_ed = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY))
-
         a_file, b_file = a_ed.get_filename(), b_ed.get_filename()
+
         if a_file == b_file:
             return
 
@@ -114,15 +108,18 @@ class Command:
             ct.msg_box(t, ct.MB_OK)
             return
 
+        if a_text_all == b_text_all:
+            t = 'The files are identical:\n{0}\n{1}'.format(a_file, b_file)
+            ct.msg_box(t, ct.MB_OK)
+            return
+
         if b_text_all == '':
             t = 'The file:\n{}\nis empty.'.format(b_file)
             ct.msg_box(t, ct.MB_OK)
             return
 
-        if a_text_all == b_text_all:
-            t = 'The files are identical:\n{0}\n{1}'.format(a_file, b_file)
-            ct.msg_box(t, ct.MB_OK)
-            return
+        a_ed.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
+        b_ed.set_prop(ct.PROP_WRAP, ct.WRAP_OFF)
 
         self.clear(a_ed)
         self.clear(b_ed)
@@ -221,7 +218,7 @@ class Command:
         self.color_gaps = ct.ed.get_prop(ct.PROP_COLOR, ct.COLOR_ID_TextBg)
 
         on = ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '1')
-        self.enable_scroll = on=='1'
+        self.enable_scroll = on == '1'
 
         def new_nkind(val, color):
             ct.ed.bookmark(ct.BOOKMARK_SETUP, 0,
