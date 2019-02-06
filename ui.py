@@ -191,14 +191,14 @@ class DifferDialog:
         f1_prop = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f1_combo')
         f1 = f1_prop.get('val')
         if not os.path.isfile(f1):
-            set_cap('g1', 'First file: (Place set correct path)')
+            set_cap('g1', 'First file: (Please set correct path)')
         else:
             set_cap('g1', 'First file:')
 
         f2_prop = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f2_combo')
         f2 = f2_prop.get('val')
         if not os.path.isfile(f2):
-            set_cap('g2', 'Second file: (Place set correct path)')
+            set_cap('g2', 'Second file: (Please set correct path)')
         else:
             set_cap('g2', 'Second file:')
 
