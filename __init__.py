@@ -65,8 +65,8 @@ class Command:
                     if e.get_prop(ct.PROP_MODIFIED):
                         text = 'First you must save file:\n' + \
                                 file_name + \
-                               '\nYES-save and continue\n' + \
-                               "NO-don't save (changes will be lost)"
+                               '\nYES: save and continue\n' + \
+                               "NO: don't save (changes will be lost)"
                         mb = ct.msg_box(text,
                                         ct.MB_YESNOCANCEL+ct.MB_ICONQUESTION)
                         if mb == ct.ID_YES:
@@ -108,13 +108,13 @@ class Command:
             ct.msg_box(t, ct.MB_OK)
             return
 
-        if a_text_all == b_text_all:
-            t = 'The files are identical:\n{0}\n{1}'.format(a_file, b_file)
+        if b_text_all == '':
+            t = 'The file:\n{}\nis empty.'.format(b_file)
             ct.msg_box(t, ct.MB_OK)
             return
 
-        if b_text_all == '':
-            t = 'The file:\n{}\nis empty.'.format(b_file)
+        if a_text_all == b_text_all:
+            t = 'The files are identical:\n{0}\n{1}'.format(a_file, b_file)
             ct.msg_box(t, ct.MB_OK)
             return
 
