@@ -196,7 +196,6 @@ class Command:
                 and self.cfg.get('theme_name') == theme_name:
             return
         self.cfg = self.get_config()
-        msg('settings were updated')
 
     def get_config(self):
         if not os.path.exists(INIFILE):

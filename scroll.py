@@ -28,7 +28,6 @@ class ScrollSplittedTab:
         else:
             hndl_opposit = hndl_primary
         e = ct.Editor(hndl_opposit)
-        if e is not None:
-            e.set_prop(ct.PROP_SCROLL_VERT, pos_v)
-            e.set_prop(ct.PROP_SCROLL_HORZ, pos_h)
-            e.cmd(ct_cmd.cmd_RepaintEditor)
+        e.set_prop(ct.PROP_SCROLL_VERT, pos_v)
+        e.set_prop(ct.PROP_SCROLL_HORZ, pos_h)
+        e.cmd(ct_cmd.cmd_RepaintEditor)
