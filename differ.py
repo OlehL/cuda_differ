@@ -75,10 +75,6 @@ class Differ:
             deca, decb = 0, 0
             for tag, ai1, ai2, bj1, bj2 in diff.get_opcodes():
                 la, lb = ai2 - ai1, bj2 - bj1
-                print(tag, best_i, best_j)
-                if tag != 'equal':
-                    yield ('-*', best_i)
-                    yield ('+*', best_j)
                 if tag == 'delete':
                     deca += 1
                     yield ('--', best_i, ai1, la)
@@ -90,6 +86,8 @@ class Differ:
                     decb += 1
                     yield ('--', best_i, ai1, la)
                     yield ('++', best_j, bj1, lb)
+            yield ('-*', best_i)
+            yield ('+*', best_j)
             yield ('-y', best_i) if deca == 0 else ('-r', best_i)
             yield ('+y', best_j) if decb == 0 else ('+g', best_j)
         yield from self._fancy_helper(a, best_i+1, ahi, b, best_j+1, bhi)
