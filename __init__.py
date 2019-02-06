@@ -11,6 +11,7 @@ NKIND_DELETED = 24
 NKIND_ADDED = 25
 NKIND_CHANGED = 26
 GAP_WIDTH = 5000
+DECOR_CHAR = '■'
 INIFILE = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'cuda_differ.ini')
 
 
@@ -24,26 +25,9 @@ def msg(s, level=0):
         print(PLG_NAME + ' ERROR:', s)
 
 
-def get_color(color_id, key, default_color):
-    color = default_color
-    s = ct.ini_read(INIFILE, 'colors', key, '')
-    f = s.find('#') == 0
-    s = s.strip().lstrip('#')
-    slen = len(s)
-    if slen == 3 and f:
-        color = int(s[0]*2 + s[1]*2 + s[2]*2, 16)
-    elif slen == 6 and f:
-        color = int(s[4:6] + s[2:4] + s[0:2], 16)
-    else:
-        for i in ct.app_proc(ct.PROC_THEME_SYNTAX_DATA_GET, ''):
-            if i.get('name') == color_id:
-                color = i.get('color_back', default_color)
-                break
-    return color
-
-
 class Command:
     def __init__(self):
+        self.cfg = self.get_config()
         self.diff = Differ()
         self.diff_dlg = DifferDialog()
         self.scroll = ScrollSplittedTab(__name__)
@@ -87,7 +71,7 @@ class Command:
 
     def on_tab_change(self, ed_self):
         self.config()
-        self.scroll.toggle(self.enable_scroll)
+        self.scroll.toggle(self.cfg.get('enable_scroll'))
 
     def refresh(self):
         if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
@@ -129,16 +113,16 @@ class Command:
                            b_text_all.splitlines(True))
 
         self.scroll.tab_id.add(ct.ed.get_prop(ct.PROP_TAB_ID))
-        self.scroll.toggle(self.enable_scroll)
+        self.scroll.toggle(self.cfg.get('enable_scroll'))
 
         for d in self.diff.compare():
             diff_id, y = d[0], d[1]
             if diff_id == '-':
                 self.set_bookmark2(a_ed, y, NKIND_DELETED)
-                self.set_decor(a_ed, y, '■', self.color_deleted)
+                self.set_decor(a_ed, y, DECOR_CHAR, self.cfg.get('color_deleted'))
             elif diff_id == '+':
                 self.set_bookmark2(b_ed, y, NKIND_ADDED)
-                self.set_decor(b_ed, y, '■', self.color_added)
+                self.set_decor(b_ed, y, DECOR_CHAR, self.cfg.get('color_added'))
             elif diff_id == '-*':
                 self.set_bookmark2(a_ed, y, NKIND_CHANGED)
             elif diff_id == '+*':
@@ -148,17 +132,17 @@ class Command:
             elif diff_id == '+^':
                 self.set_gap(b_ed, y, d[2])
             elif diff_id == '++':
-                self.set_attr(b_ed, d[2], y, d[3], self.color_added)
+                self.set_attr(b_ed, d[2], y, d[3], self.cfg.get('color_added'))
             elif diff_id == '--':
-                self.set_attr(a_ed, d[2], y, d[3], self.color_deleted)
+                self.set_attr(a_ed, d[2], y, d[3], self.cfg.get('color_deleted'))
             elif diff_id == '-y':
-                self.set_decor(a_ed, y, '■', self.color_changed)
+                self.set_decor(a_ed, y, DECOR_CHAR, self.cfg.get('color_changed'))
             elif diff_id == '+y':
-                self.set_decor(b_ed, y, '■', self.color_changed)
+                self.set_decor(b_ed, y, DECOR_CHAR, self.cfg.get('color_changed'))
             elif diff_id == '-r':
-                self.set_decor(a_ed, y, '■', self.color_deleted)
+                self.set_decor(a_ed, y, DECOR_CHAR, self.cfg.get('color_deleted'))
             elif diff_id == '+g':
-                self.set_decor(b_ed, y, '■', self.color_added)
+                self.set_decor(b_ed, y, DECOR_CHAR, self.cfg.get('color_added'))
 
     def set_attr(self, e, x, y, nlen, bg):
         e.attr(ct.MARKERS_ADD, DIFF_TAG,
@@ -174,7 +158,7 @@ class Command:
         _, h = e.get_prop(ct.PROP_CELL_SIZE)
         h_size = h * n - 2
         id_bitmap, id_canvas = e.gap(ct.GAP_MAKE_BITMAP, GAP_WIDTH, h_size)
-        ct.canvas_proc(id_canvas, ct.CANVAS_SET_BRUSH, color=self.color_gaps)
+        ct.canvas_proc(id_canvas, ct.CANVAS_SET_BRUSH, color=self.cfg.get('color_gaps'))
         ct.canvas_proc(id_canvas, ct.CANVAS_SET_ANTIALIAS,
                        style=ct.ANTIALIAS_ON)
         ct.canvas_proc(id_canvas, ct.CANVAS_RECT_FILL,
@@ -206,19 +190,33 @@ class Command:
         e.bookmark(ct.BOOKMARK2_DELETE_BY_TAG, 0, tag=DIFF_TAG)
 
     def config(self):
+        ini_time = os.path.getmtime(INIFILE)
+        theme_name = ct.app_proc(ct.PROC_THEME_SYNTAX_GET, '')
+        if self.cfg.get('ini_time') == ini_time \
+                and self.cfg.get('theme_name') == theme_name:
+            return
+        self.cfg = self.get_config()
+        msg('settings were updated')
+
+    def get_config(self):
         if not os.path.exists(INIFILE):
             ct.ini_write(INIFILE, 'colors', 'changed', '')
             ct.ini_write(INIFILE, 'colors', 'added', '')
             ct.ini_write(INIFILE, 'colors', 'deleted', '')
             ct.ini_write(INIFILE, 'config',
                          'enable_scroll_default', '1')
-        self.color_changed = get_color('LightBG2', 'changed', 0x003030)
-        self.color_added = get_color('LightBG3', 'added', 0x124200)
-        self.color_deleted = get_color('LightBG1', 'deleted', 0x07003D)
-        self.color_gaps = ct.ed.get_prop(ct.PROP_COLOR, ct.COLOR_ID_TextBg)
 
-        on = ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '1')
-        self.enable_scroll = on == '1'
+        def get_color(key, default_color):
+            s = ct.ini_read(INIFILE, 'colors', key, '')
+            f = s.find('#') == 0
+            s = s.strip().lstrip('#')
+            slen = len(s)
+            if slen == 3 and f:
+                return int(s[0]*2 + s[1]*2 + s[2]*2, 16)
+            elif slen == 6 and f:
+                return int(s[4:6] + s[2:4] + s[0:2], 16)
+            else:
+                return default_color
 
         def new_nkind(val, color):
             ct.ed.bookmark(ct.BOOKMARK_SETUP, 0,
@@ -227,6 +225,40 @@ class Command:
                            text=''
                            )
 
-        new_nkind(NKIND_DELETED, self.color_deleted)
-        new_nkind(NKIND_ADDED, self.color_added)
-        new_nkind(NKIND_CHANGED, self.color_changed)
+        def get_theme():
+            th = {}
+            for i in ct.app_proc(ct.PROC_THEME_SYNTAX_DATA_GET, ''):
+                if i.get('name') == 'LightBG2':
+                    cb = i.get('color_back')
+                    if cb == '':
+                        cb = 0x003030
+                    th.setdefault('color_changed', cb)
+                if i.get('name') == 'LightBG3':
+                    cb = i.get('color_back')
+                    if cb == '':
+                        cb = 0x124200
+                    th.setdefault('color_added', cb)
+                if i.get('name') == 'LightBG1':
+                    cb = i.get('color_back')
+                    if cb == '':
+                        cb = 0x07003D
+                    th.setdefault('color_deleted', cb)
+            return th
+
+        t = get_theme()
+        on = ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '1')
+        config = {
+            'ini_time': os.path.getmtime(INIFILE),
+            'theme_name': ct.app_proc(ct.PROC_THEME_SYNTAX_GET, ''),
+            'color_changed': get_color('changed', t.get('color_changed')),
+            'color_added': get_color('added', t.get('color_added')),
+            'color_deleted': get_color('deleted', t.get('color_deleted')),
+            'color_gaps': ct.ed.get_prop(ct.PROP_COLOR, ct.COLOR_ID_TextBg),
+            'enable_scroll': on == '1'
+        }
+
+        new_nkind(NKIND_DELETED, config.get('color_deleted'))
+        new_nkind(NKIND_ADDED, config.get('color_added'))
+        new_nkind(NKIND_CHANGED, config.get('color_changed'))
+
+        return config
