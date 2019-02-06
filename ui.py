@@ -2,6 +2,9 @@
 import cudatext as ct
 
 
+HISTORY_SIZE = 24
+
+
 def center_ct():
     """get coordinates (x, y) of center CudaText"""
     x1, y1, x2, y2 = ct.app_proc(ct.PROC_COORD_WINDOW_GET, "")
@@ -209,8 +212,8 @@ class DifferDialog:
                 self.history_opened.append(self.f1)
             if self.f2 not in self.history_opened:
                 self.history_opened.append(self.f2)
-            if len(self.history_opened) > 24:
-                self.history_opened = self.history_opened[-24:]
+            if len(self.history_opened) > HISTORY_SIZE:
+                self.history_opened = self.history_opened[-HISTORY_SIZE:]
             ct.dlg_proc(id_dlg, ct.DLG_HIDE)
 
     def press_exit(self, id_dlg, id_ctl, data='', info=''):
