@@ -18,7 +18,7 @@ class ScrollSplittedTab:
         ct.app_proc(ct.PROC_SET_EVENTS, self.name+';'+ev+';;')
 
     def on_scroll(self, ed_self):
-        if ed_self.get_prop(ct.PROP_SPLIT) == '-':
+        if ed_self.get_prop(ct.PROP_SPLIT)[0] == '-':
             return
         pos_v = ed_self.get_prop(ct.PROP_SCROLL_VERT)
         pos_h = ed_self.get_prop(ct.PROP_SCROLL_HORZ)
