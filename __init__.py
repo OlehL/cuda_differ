@@ -211,7 +211,7 @@ class Command:
             s = s.strip().lstrip('#')
             slen = len(s)
             if slen == 3 and f:
-                return int(s[0]*2 + s[1]*2 + s[2]*2, 16)
+                return int(s[2]*2 + s[1]*2 + s[0]*2, 16)
             elif slen == 6 and f:
                 return int(s[4:6] + s[2:4] + s[0:2], 16)
             else:
