@@ -115,7 +115,7 @@ class Command:
         self.scroll.tab_id.add(ct.ed.get_prop(ct.PROP_TAB_ID))
         self.scroll.toggle(self.cfg.get('enable_scroll'))
 
-        for d in self.diff.compare(self.cfg.get('ratio')):
+        for d in self.diff.compare(self.cfg.get('compare_with_details'), self.cfg.get('ratio')):
             diff_id, y = d[0], d[1]
             if diff_id == '-':
                 self.set_bookmark2(a_ed, y, NKIND_DELETED)
@@ -212,6 +212,7 @@ class Command:
             ct.ini_write(INIFILE, 'colors', 'deleted', '')
             ct.ini_write(INIFILE, 'colors', 'gap', '')
             ct.ini_write(INIFILE, 'config', 'enable_scroll_default', '1'),
+            ct.ini_write(INIFILE, 'config', 'compare_with_details', '1'),
             ct.ini_write(INIFILE, 'config', 'ratio', '0.75')
 
         def get_color(key, default_color):
@@ -254,7 +255,7 @@ class Command:
             return th
 
         t = get_theme()
-        on = ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '1')
+        # on = ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '1')
         config = {
             'ini_time': os.path.getmtime(INIFILE),
             'theme_name': ct.app_proc(ct.PROC_THEME_SYNTAX_GET, ''),
@@ -262,7 +263,8 @@ class Command:
             'color_added': get_color('added', t.get('color_added')),
             'color_deleted': get_color('deleted', t.get('color_deleted')),
             'color_gaps': get_color('gap', ct.COLOR_NONE),
-            'enable_scroll': on == '1',
+            'enable_scroll': ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '1') == '1',
+            'compare_with_details': ct.ini_read(INIFILE, 'config', 'compare_with_details', '1') == '1',
             'ratio': float(ct.ini_read(INIFILE, 'config', 'ratio', '0.75'))
         }
 

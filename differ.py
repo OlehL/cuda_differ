@@ -27,21 +27,43 @@ class Differ:
         self.b = b
         self.diff.set_seqs(a, b)
 
-    def compare(self, ratio=0.75):
+    def compare(self, withdetail=True, ratio=0.75):
         self.cut = ratio
         diff = SequenceMatcher(None, self.a, self.b)
-        for tag, i1, i2, j1, j2 in diff.get_opcodes():
-            delta = abs(i1-i2-j1+j2)
-            if tag == 'delete':
-                yield ('+^', j2, delta)
-                for y in range(i1, i2):
-                    yield ('-', y)
-            elif tag == 'insert':
-                yield ('-^', i2, delta)
-                for y in range(j1, j2):
-                    yield ('+', y)
-            elif tag == 'replace':
-                yield from self._fancy_replace(self.a, i1, i2, self.b, j1, j2)
+        if withdetail:
+            for tag, i1, i2, j1, j2 in diff.get_opcodes():
+                delta = abs(i1-i2-j1+j2)
+                if tag == 'delete':
+                    yield ('+^', j2, delta)
+                    for y in range(i1, i2):
+                        yield ('-', y)
+                elif tag == 'insert':
+                    yield ('-^', i2, delta)
+                    for y in range(j1, j2):
+                        yield ('+', y)
+                elif tag == 'replace':
+                    yield from self._fancy_replace(self.a, i1, i2, self.b, j1, j2)
+        else:
+            for tag, i1, i2, j1, j2 in diff.get_opcodes():
+                if tag != 'equal':
+                    delta = i1-i2-j1+j2
+                    if delta > 0:
+                        yield ('-^', i2, delta)
+                    elif delta < 0:
+                        yield ('+^', j2, abs(delta))
+                if tag == 'delete':
+                    for y in range(i1, i2):
+                        yield ('-', y)
+                elif tag == 'insert':
+                    for y in range(j1, j2):
+                        yield ('+', y)
+                elif tag == 'replace':
+                    for y in range(i1, i2):
+                        yield ('-*', y)
+                        yield ('-y', y)
+                    for y in range(j1, j2):
+                        yield ('+*', y)
+                        yield ('+y', y)
 
     def _fancy_replace(self, a, alo, ahi, b, blo, bhi):
         best_ratio, cutoff = self.cut-0.01, self.cut
