@@ -27,7 +27,8 @@ class Differ:
         self.b = b
         self.diff.set_seqs(a, b)
 
-    def compare(self):
+    def compare(self, ratio=0.75):
+        self.cut = ratio
         diff = SequenceMatcher(None, self.a, self.b)
         for tag, i1, i2, j1, j2 in diff.get_opcodes():
             delta = abs(i1-i2-j1+j2)
@@ -43,7 +44,7 @@ class Differ:
                 yield from self._fancy_replace(self.a, i1, i2, self.b, j1, j2)
 
     def _fancy_replace(self, a, alo, ahi, b, blo, bhi):
-        best_ratio, cutoff = 0.74, 0.75
+        best_ratio, cutoff = self.cut-0.01, self.cut
         diff = SequenceMatcher(None)
         eqi, eqj = None, None
         for j in range(blo, bhi):

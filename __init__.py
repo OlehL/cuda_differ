@@ -115,7 +115,7 @@ class Command:
         self.scroll.tab_id.add(ct.ed.get_prop(ct.PROP_TAB_ID))
         self.scroll.toggle(self.cfg.get('enable_scroll'))
 
-        for d in self.diff.compare():
+        for d in self.diff.compare(self.cfg.get('ratio')):
             diff_id, y = d[0], d[1]
             if diff_id == '-':
                 self.set_bookmark2(a_ed, y, NKIND_DELETED)
@@ -157,7 +157,7 @@ class Command:
         "set gap line after row line"
         # print('gap:', row, n)
         _, h = e.get_prop(ct.PROP_CELL_SIZE)
-        h_size = h * n - 2
+        h_size = h * n
         if h_size > 500:
             return
         # id_bitmap, id_canvas = e.gap(ct.GAP_MAKE_BITMAP, GAP_WIDTH, h_size)
@@ -211,8 +211,8 @@ class Command:
             ct.ini_write(INIFILE, 'colors', 'added', '')
             ct.ini_write(INIFILE, 'colors', 'deleted', '')
             ct.ini_write(INIFILE, 'colors', 'gap', '')
-            ct.ini_write(INIFILE, 'config',
-                         'enable_scroll_default', '1')
+            ct.ini_write(INIFILE, 'config', 'enable_scroll_default', '1'),
+            ct.ini_write(INIFILE, 'config', 'ratio', '0.75')
 
         def get_color(key, default_color):
             s = ct.ini_read(INIFILE, 'colors', key, '')
@@ -262,7 +262,8 @@ class Command:
             'color_added': get_color('added', t.get('color_added')),
             'color_deleted': get_color('deleted', t.get('color_deleted')),
             'color_gaps': get_color('gap', ct.COLOR_NONE),
-            'enable_scroll': on == '1'
+            'enable_scroll': on == '1',
+            'ratio': float(ct.ini_read(INIFILE, 'config', 'ratio', '0.75'))
         }
 
         new_nkind(NKIND_DELETED, config.get('color_deleted'))
