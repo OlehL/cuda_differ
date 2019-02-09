@@ -77,6 +77,7 @@ class DifferDialog:
                           'a_r': ('', ']'),
                           'sp_a': 5,
                           'p': 'g1',
+                          'tab_order': 1,
                           'on_change': self.open_1_file
                           }
                     )
@@ -90,7 +91,8 @@ class DifferDialog:
                           'a_r': ('browse_1', '['),
                           'a_t': ('', '['),
                           'sp_a': 5,
-                          'p': 'g1'
+                          'p': 'g1',
+                          'tab_order': 0
                           }
                     )
 
@@ -118,6 +120,7 @@ class DifferDialog:
                           'a_r': ('', ']'),
                           'sp_a': 5,
                           'p': 'g2',
+                          'tab_order': 1,
                           'on_change': self.open_2_file
                           }
                     )
@@ -132,6 +135,7 @@ class DifferDialog:
                           'a_t': ('', '['),
                           'sp_a': 5,
                           'p': 'g2',
+                          'tab_order': 0,
                           }
                     )
 
@@ -166,8 +170,10 @@ class DifferDialog:
                           'on_change': self.press_ok
                           }
                     )
-        # print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='ok'))
-        # print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='cancel'))
+        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_1'))
+        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f1_combo'))
+        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_2'))
+        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f2_combo'))
         return self.h
 
     def open_1_file(self, id_dlg, id_ctl, data='', info=''):
