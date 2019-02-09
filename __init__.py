@@ -155,18 +155,26 @@ class Command:
 
     def set_gap(self, e, row, n=1):
         "set gap line after row line"
+        # print('gap:', row, n)
         _, h = e.get_prop(ct.PROP_CELL_SIZE)
         h_size = h * n - 2
-        id_bitmap, id_canvas = e.gap(ct.GAP_MAKE_BITMAP, GAP_WIDTH, h_size)
-        ct.canvas_proc(id_canvas, ct.CANVAS_SET_BRUSH, color=self.cfg.get('color_gaps'))
-        ct.canvas_proc(id_canvas, ct.CANVAS_SET_ANTIALIAS,
-                       style=ct.ANTIALIAS_ON)
-        ct.canvas_proc(id_canvas, ct.CANVAS_RECT_FILL,
-                       x=0, y=0, x2=GAP_WIDTH, y2=h_size)
-        e.gap(ct.GAP_ADD,
-              row-1,
-              id_bitmap,
-              tag=DIFF_TAG
+        if h_size > 500:
+            return
+        # id_bitmap, id_canvas = e.gap(ct.GAP_MAKE_BITMAP, GAP_WIDTH, h_size)
+        # ct.canvas_proc(id_canvas, ct.CANVAS_SET_BRUSH, color=self.cfg.get('color_gaps'))
+        # ct.canvas_proc(id_canvas, ct.CANVAS_SET_ANTIALIAS,
+        #                style=ct.ANTIALIAS_ON)
+        # ct.canvas_proc(id_canvas, ct.CANVAS_RECT_FILL,
+        #                x=0, y=0, x2=GAP_WIDTH, y2=h_size)
+        # e.gap(ct.GAP_ADD,
+        #       row-1,
+        #       id_bitmap,
+        #       tag=DIFF_TAG
+        #       )
+        e.gap(ct.GAP_ADD, row-1, 0,
+              tag=DIFF_TAG,
+              size=h_size,
+              color=self.cfg.get('color_gaps')
               )
 
     def set_decor(self, e, row, text, color):
@@ -202,6 +210,7 @@ class Command:
             ct.ini_write(INIFILE, 'colors', 'changed', '')
             ct.ini_write(INIFILE, 'colors', 'added', '')
             ct.ini_write(INIFILE, 'colors', 'deleted', '')
+            ct.ini_write(INIFILE, 'colors', 'gap', '')
             ct.ini_write(INIFILE, 'config',
                          'enable_scroll_default', '1')
 
@@ -252,7 +261,7 @@ class Command:
             'color_changed': get_color('changed', t.get('color_changed')),
             'color_added': get_color('added', t.get('color_added')),
             'color_deleted': get_color('deleted', t.get('color_deleted')),
-            'color_gaps': ct.ed.get_prop(ct.PROP_COLOR, ct.COLOR_ID_TextBg),
+            'color_gaps': get_color('gap', ct.COLOR_NONE),
             'enable_scroll': on == '1'
         }
 
