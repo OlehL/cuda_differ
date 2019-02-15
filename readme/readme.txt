@@ -1,13 +1,13 @@
 Plugin for CudaText.
 It compares two files and shows them side-by-side.
-Plugin uses new API (CudaText 1.74+) and shows 2 files in a single tab.
+Plugin uses new API (CudaText 1.75+) and shows 2 files in a single tab.
 
-It gives few commands in menu "Plugins / Differ".
+It gives few commands in menu "Plugins / Differ". Command "Refresh" runs comparision again, if one or both files were edited.
 
-It has few options in config file. To open config, call
-"Options / Settings-plugins / Differ / Config".
-Options are highlight colors (added/changed/deleted lines), if they 
-are not filled, then colors from the current theme are used.
+It has few options in config file. To open config, call "Options / Settings-plugins / Differ / Config". Options:
+
+- "added", "changed", "deleted": Changed lines highlight colors. Must be in HTML form #rgb or #rrggbb. If empty, then colors from the current theme are used.
+- "enable_scroll_default": bool, 0 or 1: Sync scrolling in both compared files. 
 
 
 Author: OlehL, https://github.com/OlehL
