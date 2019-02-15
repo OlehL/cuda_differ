@@ -158,19 +158,6 @@ class Command:
         # print('gap:', row, n)
         _, h = e.get_prop(ct.PROP_CELL_SIZE)
         h_size = h * n
-        if h_size > 500:
-            return
-        # id_bitmap, id_canvas = e.gap(ct.GAP_MAKE_BITMAP, GAP_WIDTH, h_size)
-        # ct.canvas_proc(id_canvas, ct.CANVAS_SET_BRUSH, color=self.cfg.get('color_gaps'))
-        # ct.canvas_proc(id_canvas, ct.CANVAS_SET_ANTIALIAS,
-        #                style=ct.ANTIALIAS_ON)
-        # ct.canvas_proc(id_canvas, ct.CANVAS_RECT_FILL,
-        #                x=0, y=0, x2=GAP_WIDTH, y2=h_size)
-        # e.gap(ct.GAP_ADD,
-        #       row-1,
-        #       id_bitmap,
-        #       tag=DIFF_TAG
-        #       )
         e.gap(ct.GAP_ADD, row-1, 0,
               tag=DIFF_TAG,
               size=h_size,
