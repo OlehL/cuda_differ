@@ -198,7 +198,7 @@ class Command:
             ct.ini_write(INIFILE, 'colors', 'added', '')
             ct.ini_write(INIFILE, 'colors', 'deleted', '')
             ct.ini_write(INIFILE, 'colors', 'gap', '')
-            ct.ini_write(INIFILE, 'config', 'enable_scroll_default', '1'),
+            ct.ini_write(INIFILE, 'config', 'enable_scroll_default', '0'), # sync scroll works bad at the file end, bugs in CudaText 1.78.x
             ct.ini_write(INIFILE, 'config', 'compare_with_details', '1'),
             ct.ini_write(INIFILE, 'config', 'ratio', '0.75')
 
@@ -250,7 +250,7 @@ class Command:
             'color_added': get_color('added', t.get('color_added')),
             'color_deleted': get_color('deleted', t.get('color_deleted')),
             'color_gaps': get_color('gap', ct.COLOR_NONE),
-            'enable_scroll': ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '1') == '1',
+            'enable_scroll': ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '0') == '1',
             'compare_with_details': ct.ini_read(INIFILE, 'config', 'compare_with_details', '1') == '1',
             'ratio': float(ct.ini_read(INIFILE, 'config', 'ratio', '0.75'))
         }
