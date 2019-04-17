@@ -1,5 +1,5 @@
-2019.04.15
-* require CudaText 1.78.5
+2019.04.17
+* require CudaText 1.78.7
 + changed sync-scroll to smooth (per pixel) scroll
 * changed default of sync-scroll option to 0 (off)
 
