@@ -15,8 +15,8 @@ def center_ct():
 
 class DifferDialog:
     def __init__(self):
-        self.f1 = None
-        self.f2 = None
+        self.f1 = ''
+        self.f2 = ''
         self.history_opened = []
 
     def run(self):
@@ -29,8 +29,15 @@ class DifferDialog:
                 open_files.add(os.path.abspath(f))
         items = "\t".join({*open_files, *self.history_opened})
 
-        f1 = ct.ed.get_filename()
-        self.f1 = f1 if os.path.exists(f1) else None
+        self.f1 = ct.ed.get_filename()
+        self.f2 = ''
+
+        if ct.app_proc(ct.PROC_GET_GROUPING, '') != ct.GROUPS_ONE:
+            e1 = ct.ed_group(0)
+            e2 = ct.ed_group(1)
+            if e1 and e2:
+                self.f1 = e1.get_filename()
+                self.f2 = e2.get_filename()
 
         dlg = self.dialog(items)
         ct.dlg_proc(dlg, ct.DLG_SHOW_MODAL)
