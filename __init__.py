@@ -64,7 +64,7 @@ class Command:
                     e.cmd(ct_cmd.cmd_FileClose)
                     break
 
-        ct.file_open(files)
+        ct.file_open(files, options='/nohistory')
         self.refresh()
 
     def on_scroll(self, ed_self):
