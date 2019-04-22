@@ -32,7 +32,18 @@ class DifferDialog:
         self.f1 = ct.ed.get_filename()
         self.f2 = ''
 
-        if ct.app_proc(ct.PROC_GET_GROUPING, '') != ct.GROUPS_ONE:
+        if ct.app_proc(ct.PROC_GET_GROUPING, '') == ct.GROUPS_ONE:
+
+            # if 2 files opened in group-1, suggest these 2 files
+            hh = ct.ed_handles()
+            if len(hh)==2:
+                name1 = ct.Editor(hh[0]).get_filename()
+                name2 = ct.Editor(hh[1]).get_filename()
+                if name1 and name2:
+                    self.f1 = name1
+                    self.f2 = name2
+
+        else:
             e1 = ct.ed_group(0)
             e2 = ct.ed_group(1)
             if e1 and e2:
