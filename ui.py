@@ -177,10 +177,11 @@ class DifferDialog:
                           'on_change': self.press_ok
                           }
                     )
-        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_1'))
-        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f1_combo'))
-        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_2'))
-        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f2_combo'))
+        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_1'))
+        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f1_combo'))
+        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_2'))
+        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f2_combo'))
+
         return self.h
 
     def open_1_file(self, id_dlg, id_ctl, data='', info=''):
