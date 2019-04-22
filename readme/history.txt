@@ -1,3 +1,9 @@
+
+2019.04.22
++ add: UI: if 2 files opened in group-1, Choose File dialog suggests these 2 files
++ add: UI: if 2 files opened in group-1 and group-1, Choose File dialog suggests them
++ add: UI: if plugin opens file from group-2 and now group-2 is empty, plugin sets "one group" mode
+
 2019.04.17
 * require CudaText 1.78.7
 + add: changed sync-scroll to smooth (per pixel) scroll
