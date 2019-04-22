@@ -16,6 +16,16 @@ section=commands
 caption=Differ\Refresh
 method=refresh
 
+[item6]
+section=commands
+caption=Differ\Jump to next difference
+method=jump_next
+
+[item7]
+section=commands
+caption=Differ\Jump to previous difference
+method=jump_prev
+
 [item10]
 section=commands
 caption=Differ\Config

@@ -273,3 +273,38 @@ class Command:
 
         file_history.clear()
         file_history.save()
+
+
+    def jump(self, next):
+
+        items = ct.ed.decor(ct.DECOR_GET_ALL)
+        if not items: return
+
+        items = [i for i in items if i['tag']==DIFF_TAG]
+        if not items: return
+
+        x, y, x2, y2 = ct.ed.get_carets()[0]
+
+        if next:
+            items = [i for i in items if i['line']>y]
+            if not items:
+                return ct.msg_status('Cannot find next difference')
+            y = items[0]['line']
+        else:
+            items = [i for i in items if i['line']<y]
+            if not items:
+                return ct.msg_status('Cannot find previous difference')
+            y = items[-1]['line']
+
+        ct.ed.set_caret(0, y, -1, -1)
+        ct.msg_status('Jumped to line %d'%(y+1))
+
+
+    def jump_next(self):
+
+        self.jump(True)
+
+    def jump_prev(self):
+
+        self.jump(False)
+

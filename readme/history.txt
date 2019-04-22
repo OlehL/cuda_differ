@@ -1,4 +1,7 @@
 
+2019.04.23
++ add: commands "Jump to next diffecence", "Jump to previous difference"
+
 2019.04.22
 + add: UI: dialog Choose File saves recent files history (max count: from CudaText option)
 + add: UI: if 2 files opened in group-1, Choose File dialog suggests these 2 files
