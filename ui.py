@@ -2,7 +2,42 @@
 import cudatext as ct
 
 
-HISTORY_SIZE = 24
+class FileHistory:
+    items = []
+    max_size = 50
+    section = 'recents'
+
+    def __init__(self):
+
+        self.filename = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'cuda_differ_history.ini')
+
+    def load(self):
+
+        self.items = []
+        for i in range(self.max_size):
+            fn = ct.ini_read(self.filename, self.section, str(i), '')
+            if not fn: break
+            self.items.append(fn)
+
+    def save(self):
+
+        ct.ini_proc(ct.INI_DELETE_SECTION, self.filename, self.section, '')
+        for (i, item) in enumerate(self.items):
+            ct.ini_write(self.filename, self.section, str(i), item)
+
+    def add(self, item):
+
+        if not item: return
+        if item in self.items:
+            self.items.remove(item)
+        self.items.insert(0, item)
+
+        if len(self.items) > self.max_size:
+            self.items = self.items[:self.max_size]
+
+
+file_history = FileHistory()
+file_history.load()
 
 
 def center_ct():
@@ -17,17 +52,18 @@ class DifferDialog:
     def __init__(self):
         self.f1 = ''
         self.f2 = ''
-        self.history_opened = []
 
     def run(self):
+        global file_history
         self.ready = False
-        open_files = set()
+        open_files = []
+
         for h in ct.ed_handles():
-            e = ct.Editor(h)
-            f = e.get_filename()
+            f = ct.Editor(h).get_filename()
             if os.path.isfile(f):
-                open_files.add(os.path.abspath(f))
-        items = "\t".join({*open_files, *self.history_opened})
+                open_files.append(f)
+
+        items = "\t".join(open_files+file_history.items)
 
         self.f1 = ct.ed.get_filename()
         self.f2 = ''
@@ -210,6 +246,8 @@ class DifferDialog:
                     )
 
     def press_ok(self, id_dlg, id_ctl, data='', info=''):
+        global file_history
+
         def set_cap(name, cap):
             ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET,
                         name=name,
@@ -233,12 +271,11 @@ class DifferDialog:
         if os.path.isfile(f1) and os.path.isfile(f2):
             self.ready = True
             self.f1, self.f2 = os.path.abspath(f1), os.path.abspath(f2)
-            if self.f1 not in self.history_opened:
-                self.history_opened.append(self.f1)
-            if self.f2 not in self.history_opened:
-                self.history_opened.append(self.f2)
-            if len(self.history_opened) > HISTORY_SIZE:
-                self.history_opened = self.history_opened[-HISTORY_SIZE:]
+
+            file_history.add(self.f1)
+            file_history.add(self.f2)
+            file_history.save()
+
             ct.dlg_proc(id_dlg, ct.DLG_HIDE)
 
     def press_exit(self, id_dlg, id_ctl, data='', info=''):
