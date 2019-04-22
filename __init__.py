@@ -13,6 +13,7 @@ NKIND_CHANGED = 26
 GAP_WIDTH = 5000
 DECOR_CHAR = '■'
 INIFILE = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'cuda_differ.ini')
+DEFAULT_SYNC_SCROLL = '1'
 
 
 def msg(s, level=0):
@@ -63,7 +64,7 @@ class Command:
                     e.cmd(ct_cmd.cmd_FileClose)
                     break
 
-        ct.file_open(files)
+        ct.file_open(files, options='/nohistory')
         self.refresh()
 
     def on_scroll(self, ed_self):
@@ -198,7 +199,7 @@ class Command:
             ct.ini_write(INIFILE, 'colors', 'added', '')
             ct.ini_write(INIFILE, 'colors', 'deleted', '')
             ct.ini_write(INIFILE, 'colors', 'gap', '')
-            ct.ini_write(INIFILE, 'config', 'enable_scroll_default', '0'), # sync scroll works bad at the file end, bugs in CudaText 1.78.x
+            ct.ini_write(INIFILE, 'config', 'enable_scroll_default', DEFAULT_SYNC_SCROLL),
             ct.ini_write(INIFILE, 'config', 'compare_with_details', '1'),
             ct.ini_write(INIFILE, 'config', 'ratio', '0.75')
 
@@ -250,7 +251,7 @@ class Command:
             'color_added': get_color('added', t.get('color_added')),
             'color_deleted': get_color('deleted', t.get('color_deleted')),
             'color_gaps': get_color('gap', ct.COLOR_NONE),
-            'enable_scroll': ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '0') == '1',
+            'enable_scroll': ct.ini_read(INIFILE, 'config', 'enable_scroll_default', DEFAULT_SYNC_SCROLL) == '1',
             'compare_with_details': ct.ini_read(INIFILE, 'config', 'compare_with_details', '1') == '1',
             'ratio': float(ct.ini_read(INIFILE, 'config', 'ratio', '0.75'))
         }

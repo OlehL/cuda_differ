@@ -21,13 +21,9 @@ class ScrollSplittedTab:
         if ed_self.get_prop(ct.PROP_SPLIT)[0] == '-':
             return
 
-        info_v = ed_self.get_prop(ct.PROP_SCROLL_VERT_INFO)
-        info_h = ed_self.get_prop(ct.PROP_SCROLL_HORZ_INFO)
-        pos_v = info_v['smooth_pos']
-        pos_h = info_h['smooth_pos']
-        max_v = info_v['smooth_pos_last']
-        max_h = info_h['smooth_pos_last']
-        
+        pos_v = ed_self.get_prop(ct.PROP_SCROLL_VERT_SMOOTH)
+        pos_h = ed_self.get_prop(ct.PROP_SCROLL_HORZ_SMOOTH)
+
         hndl_self = ed_self.get_prop(ct.PROP_HANDLE_SELF)
         hndl_primary = ed_self.get_prop(ct.PROP_HANDLE_PRIMARY)
         hndl_secondary = ed_self.get_prop(ct.PROP_HANDLE_SECONDARY)
@@ -37,14 +33,7 @@ class ScrollSplittedTab:
             hndl_opposit = hndl_primary
         e = ct.Editor(hndl_opposit)
 
-        info2_v = e.get_prop(ct.PROP_SCROLL_VERT_INFO)
-        info2_h = e.get_prop(ct.PROP_SCROLL_HORZ_INFO)
-        max2_v = info2_v['smooth_pos_last']
-        max2_h = info2_h['smooth_pos_last']
-
-        if pos_v<max_v and pos_v<max2_v:
-            e.set_prop(ct.PROP_SCROLL_VERT_SMOOTH, pos_v)
-        if pos_h<max_h and pos_h<max2_h:
-            e.set_prop(ct.PROP_SCROLL_HORZ_SMOOTH, pos_h)
+        e.set_prop(ct.PROP_SCROLL_VERT_SMOOTH, pos_v)
+        e.set_prop(ct.PROP_SCROLL_HORZ_SMOOTH, pos_h)
 
         e.cmd(ct_cmd.cmd_RepaintEditor)

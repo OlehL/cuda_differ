@@ -1,7 +1,7 @@
-2019.04.15
-* require CudaText 1.78.5
-+ changed sync-scroll to smooth (per pixel) scroll
-* changed default of sync-scroll option to 0 (off)
+2019.04.17
+* require CudaText 1.78.7
++ add: changed sync-scroll to smooth (per pixel) scroll
++ add: if 2+ groups are opened in CudaText, suggest in Choose Files dialog files from groups 1 and 2 
 
 2019.02.07
 - minor fixes

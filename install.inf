@@ -4,7 +4,7 @@ desc=Plugin to compare two files and show compare results side by side
 type=cudatext-plugin
 subdir=cuda_differ
 homepage=https://github.com/OlehL/cuda_differ
-api=1.0.281
+api=1.0.282
 
 [item1]
 section=commands
