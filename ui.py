@@ -109,7 +109,7 @@ class DifferDialog:
                           'h': 180,
                           'resize': False,
                           "keypreview": True,
-                          'on_key_down': self.press_enter
+                          'on_key_down': self.press_key
                           }
                     )
 
@@ -226,6 +226,7 @@ class DifferDialog:
                           'a_l': None,
                           'a_r': ('cancel', '['),
                           'sp_a': 5,
+                          'ex0': True, # press button by Enter
                           'tab_order': 2,
                           'on_change': self.press_ok
                           }
@@ -287,9 +288,5 @@ class DifferDialog:
     def press_exit(self, id_dlg, id_ctl, data='', info=''):
         ct.dlg_proc(id_dlg, ct.DLG_HIDE)
 
-    def press_enter(self, id_dlg, id_ctl, data='', info=''):
-        if id_ctl != 13:  # enter = 13
-            return
-        if data != '':
-            return
-        self.press_ok(id_dlg, id_ctl, data='', info='')
+    def press_key(self, id_dlg, id_ctl, data='', info=''):
+        pass
