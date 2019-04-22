@@ -1,15 +1,17 @@
 ﻿import os
 import cudatext as ct
+import cudax_lib as appx
 
 
 class FileHistory:
     items = []
-    max_size = 50
     section = 'recents'
 
     def __init__(self):
 
         self.filename = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'cuda_differ_history.ini')
+        self.max_size = appx.get_opt('ui_max_history_files', 25)
+        #print('Differ history max_size:', self.max_size)
 
     def load(self):
 

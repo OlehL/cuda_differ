@@ -1,6 +1,6 @@
 
 2019.04.22
-+ add: UI: dialog Choose File saves recent files history (max 50 items)
++ add: UI: dialog Choose File saves recent files history (max count: from CudaText option)
 + add: UI: if 2 files opened in group-1, Choose File dialog suggests these 2 files
 + add: UI: if 2 files opened in group-1 and group-1, Choose File dialog suggests them
 + add: UI: if plugin opens file from group-2 and now group-2 is empty, plugin sets "one group" mode
