@@ -66,6 +66,12 @@ class Command:
 
         ct.file_open(files, options='/nohistory')
         self.refresh()
+        
+        # if file was in group-2, and now group-2 is empty, set "one group" mode
+        if ct.app_proc(ct.PROC_GET_GROUPING, '') in [ct.GROUPS_2VERT, ct.GROUPS_2HORZ]:
+            e = ct.ed_group(1) # Editor obj in group-2
+            if not e:
+                ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_ONE)
 
     def on_scroll(self, ed_self):
         self.scroll.on_scroll(ed_self)
