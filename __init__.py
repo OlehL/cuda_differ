@@ -3,7 +3,7 @@ import cudatext as ct
 import cudatext_cmd as ct_cmd
 from .differ import Differ
 from .scroll import ScrollSplittedTab
-from .ui import DifferDialog
+from .ui import DifferDialog, file_history
 
 
 DIFF_TAG = 148
@@ -66,7 +66,7 @@ class Command:
 
         ct.file_open(files, options='/nohistory')
         self.refresh()
-        
+
         # if file was in group-2, and now group-2 is empty, set "one group" mode
         if ct.app_proc(ct.PROC_GET_GROUPING, '') in [ct.GROUPS_2VERT, ct.GROUPS_2HORZ]:
             e = ct.ed_group(1) # Editor obj in group-2
@@ -267,3 +267,9 @@ class Command:
         new_nkind(NKIND_CHANGED, config.get('color_changed'))
 
         return config
+
+
+    def clear_history(self):
+
+        file_history.clear()
+        file_history.save()

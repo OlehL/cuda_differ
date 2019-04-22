@@ -35,6 +35,10 @@ class FileHistory:
         if len(self.items) > self.max_size:
             self.items = self.items[:self.max_size]
 
+    def clear(self):
+    
+        self.items = []
+
 
 file_history = FileHistory()
 file_history.load()

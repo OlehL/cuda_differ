@@ -16,8 +16,14 @@ section=commands
 caption=Differ\Refresh
 method=refresh
 
-[item3]
+[item10]
 section=commands
 caption=Differ\Config
 method=change_config
+menu=o
+
+[item11]
+section=commands
+caption=Differ\Clear recents history
+method=clear_history
 menu=o
