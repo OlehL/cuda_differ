@@ -277,24 +277,33 @@ class Command:
 
     def jump(self, next):
 
-        items = ct.ed.decor(ct.DECOR_GET_ALL)
-        if not items: return
+        # merge two lists, Decor and Gaps, into single list of line numbers
 
-        items = [i for i in items if i['tag']==DIFF_TAG]
+        items1 = ct.ed.decor(ct.DECOR_GET_ALL) or []
+        items1 = [i['line'] for i in items1 if i['tag']==DIFF_TAG]
+        #print('i1', items1)
+
+        items2 = ct.ed.gap(ct.GAP_GET_LIST, 0, 0) or []
+        items2 = [i[0] for i in items2 if i[1]==DIFF_TAG]
+        #print('i2', items2)
+
+        items2 = [i for i in items2 if i not in items1]
+        items = sorted(items1+items2)
         if not items: return
+        #print('i', items)
 
         x, y, x2, y2 = ct.ed.get_carets()[0]
 
         if next:
-            items = [i for i in items if i['line']>y]
+            items = [i for i in items if i>y]
             if not items:
                 return ct.msg_status('Cannot find next difference')
-            y = items[0]['line']
+            y = items[0]
         else:
-            items = [i for i in items if i['line']<y]
+            items = [i for i in items if i<y]
             if not items:
                 return ct.msg_status('Cannot find previous difference')
-            y = items[-1]['line']
+            y = items[-1]
 
         ct.ed.set_caret(0, y, -1, -1)
         ct.msg_status('Jumped to line %d'%(y+1))
