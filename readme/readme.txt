@@ -1,8 +1,9 @@
 Plugin for CudaText.
 It compares two files and shows them side-by-side.
-Plugin uses new API (CudaText 1.75+) and shows 2 files in a single tab.
+Plugin shows two files in a single tab.
 
-It gives few commands in menu "Plugins / Differ". Command "Refresh" runs comparision again, if one or both files were edited.
+It gives few commands in menu "Plugins / Differ".
+Command "Refresh" runs comparision again, if one or both files were edited.
 
 It has few options in config file. To open config, call "Options / Settings-plugins / Differ / Config". Options:
 
@@ -10,5 +11,7 @@ It has few options in config file. To open config, call "Options / Settings-plug
 - "enable_scroll_default": bool, 0 or 1: Sync scrolling in both compared files. 
 
 
-Author: OlehL, https://github.com/OlehL
+Authors:
+  OlehL, https://github.com/OlehL
+  Alexey T. (CudaText)
 License: MIT

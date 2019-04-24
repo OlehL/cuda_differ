@@ -1,8 +1,49 @@
 ﻿import os
 import cudatext as ct
+import cudax_lib as appx
 
 
-HISTORY_SIZE = 24
+class FileHistory:
+    items = []
+    section = 'recents'
+
+    def __init__(self):
+
+        self.filename = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'cuda_differ_history.ini')
+        self.max_size = appx.get_opt('ui_max_history_files', 25)
+        #print('Differ history max_size:', self.max_size)
+
+    def load(self):
+
+        self.items = []
+        for i in range(self.max_size):
+            fn = ct.ini_read(self.filename, self.section, str(i), '')
+            if not fn: break
+            self.items.append(fn)
+
+    def save(self):
+
+        ct.ini_proc(ct.INI_DELETE_SECTION, self.filename, self.section, '')
+        for (i, item) in enumerate(self.items):
+            ct.ini_write(self.filename, self.section, str(i), item)
+
+    def add(self, item):
+
+        if not item: return
+        if item in self.items:
+            self.items.remove(item)
+        self.items.insert(0, item)
+
+        if len(self.items) > self.max_size:
+            self.items = self.items[:self.max_size]
+
+    def clear(self):
+    
+        self.items = []
+
+
+file_history = FileHistory()
+file_history.load()
 
 
 def center_ct():
@@ -17,22 +58,34 @@ class DifferDialog:
     def __init__(self):
         self.f1 = ''
         self.f2 = ''
-        self.history_opened = []
 
     def run(self):
+        global file_history
         self.ready = False
-        open_files = set()
+        open_files = []
+
         for h in ct.ed_handles():
-            e = ct.Editor(h)
-            f = e.get_filename()
+            f = ct.Editor(h).get_filename()
             if os.path.isfile(f):
-                open_files.add(os.path.abspath(f))
-        items = "\t".join({*open_files, *self.history_opened})
+                open_files.append(f)
+
+        items = "\t".join(open_files+file_history.items)
 
         self.f1 = ct.ed.get_filename()
         self.f2 = ''
 
-        if ct.app_proc(ct.PROC_GET_GROUPING, '') != ct.GROUPS_ONE:
+        if ct.app_proc(ct.PROC_GET_GROUPING, '') == ct.GROUPS_ONE:
+
+            # if 2 files opened in group-1, suggest these 2 files
+            hh = ct.ed_handles()
+            if len(hh)==2:
+                name1 = ct.Editor(hh[0]).get_filename()
+                name2 = ct.Editor(hh[1]).get_filename()
+                if name1 and name2:
+                    self.f1 = name1
+                    self.f2 = name2
+
+        else:
             e1 = ct.ed_group(0)
             e2 = ct.ed_group(1)
             if e1 and e2:
@@ -56,7 +109,7 @@ class DifferDialog:
                           'h': 180,
                           'resize': False,
                           "keypreview": True,
-                          'on_key_down': self.press_enter
+                          'on_key_down': self.press_key
                           }
                     )
 
@@ -173,14 +226,16 @@ class DifferDialog:
                           'a_l': None,
                           'a_r': ('cancel', '['),
                           'sp_a': 5,
+                          'ex0': True, # press button by Enter
                           'tab_order': 2,
                           'on_change': self.press_ok
                           }
                     )
-        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_1'))
-        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f1_combo'))
-        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_2'))
-        print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f2_combo'))
+        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_1'))
+        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f1_combo'))
+        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_2'))
+        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f2_combo'))
+
         return self.h
 
     def open_1_file(self, id_dlg, id_ctl, data='', info=''):
@@ -198,6 +253,8 @@ class DifferDialog:
                     )
 
     def press_ok(self, id_dlg, id_ctl, data='', info=''):
+        global file_history
+
         def set_cap(name, cap):
             ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET,
                         name=name,
@@ -221,20 +278,15 @@ class DifferDialog:
         if os.path.isfile(f1) and os.path.isfile(f2):
             self.ready = True
             self.f1, self.f2 = os.path.abspath(f1), os.path.abspath(f2)
-            if self.f1 not in self.history_opened:
-                self.history_opened.append(self.f1)
-            if self.f2 not in self.history_opened:
-                self.history_opened.append(self.f2)
-            if len(self.history_opened) > HISTORY_SIZE:
-                self.history_opened = self.history_opened[-HISTORY_SIZE:]
+
+            file_history.add(self.f1)
+            file_history.add(self.f2)
+            file_history.save()
+
             ct.dlg_proc(id_dlg, ct.DLG_HIDE)
 
     def press_exit(self, id_dlg, id_ctl, data='', info=''):
         ct.dlg_proc(id_dlg, ct.DLG_HIDE)
 
-    def press_enter(self, id_dlg, id_ctl, data='', info=''):
-        if id_ctl != 13:  # enter = 13
-            return
-        if data != '':
-            return
-        self.press_ok(id_dlg, id_ctl, data='', info='')
+    def press_key(self, id_dlg, id_ctl, data='', info=''):
+        pass
