@@ -28,7 +28,7 @@ method=jump_prev
 
 [item10]
 section=commands
-caption=Differ\Config
+caption=Differ\Config...
 method=change_config
 menu=o
 
