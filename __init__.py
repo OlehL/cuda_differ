@@ -67,9 +67,9 @@ OPTS_META    = [
     },
 ]
 
-def get_opt(section, key, dval=''):
-    return  ctx.get_opt('differ.'+section+'.'+key,     dval,    user_json=JSONFILE) if ctx.version(0)>='0.6.8' else \
-            ctx.get_opt('differ.'+section+'.'+key,     dval)
+def get_opt(key, dval=''):
+    return  ctx.get_opt('differ.'+key,     dval,    user_json=JSONFILE) if ctx.version(0)>='0.6.8' else \
+            ctx.get_opt('differ.'+key,     dval)
 
 #def set_opt(section, key, val):
 #   return ctx.set_opt('differ.'+section+'.'+key,     val,      user_json=JSONFILE)
@@ -269,14 +269,9 @@ class Command:
     def get_config(self):
 
         def get_color(key, default_color):
-            s = get_opt('colors', key, '')
-            f = s.find('#') == 0
-            s = s.strip().lstrip('#')
-            slen = len(s)
-            if slen == 3 and f:
-                return int(s[2]*2 + s[1]*2 + s[0]*2, 16)
-            elif slen == 6 and f:
-                return int(s[4:6] + s[2:4] + s[0:2], 16)
+            s = get_opt(key, '')
+            if s:
+                return ctx.html_color_to_int(s)
             else:
                 return default_color
 
@@ -315,9 +310,9 @@ class Command:
             'color_added':      get_color('added_color',    t.get('color_added')),
             'color_deleted':    get_color('deleted_color',  t.get('color_deleted')),
             'color_gaps':       get_color('gap_color',      ct.COLOR_NONE),
-            'enable_scroll':        get_opt('config', 'enable_scroll_default', DEFAULT_SYNC_SCROLL == '1'),
-            'compare_with_details': get_opt('config', 'compare_with_details', True),
-            'ratio':                get_opt('config', 'ratio',  0.75)
+            'enable_scroll':        get_opt('enable_scroll_default', DEFAULT_SYNC_SCROLL == '1'),
+            'compare_with_details': get_opt('compare_with_details', True),
+            'ratio':                get_opt('ratio',  0.75)
         }
 
         new_nkind(NKIND_DELETED, config.get('color_deleted'))
