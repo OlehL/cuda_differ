@@ -259,7 +259,7 @@ class Command:
         e.bookmark(ct.BOOKMARK2_DELETE_BY_TAG, 0, tag=DIFF_TAG)
 
     def config(self):
-        opt_time = os.path.getmtime(JSONPATH)
+        opt_time = os.path.getmtime(JSONPATH) if os.path.exists(JSONPATH) else 0
         theme_name = ct.app_proc(ct.PROC_THEME_SYNTAX_GET, '')
         if self.cfg.get('opt_time') == opt_time     and \
            self.cfg.get('theme_name') == theme_name:
@@ -304,7 +304,7 @@ class Command:
 
         t = get_theme()
         config = {
-            'opt_time':     os.path.getmtime(JSONPATH),
+            'opt_time':     os.path.getmtime(JSONPATH) if os.path.exists(JSONPATH) else 0,
             'theme_name':   ct.app_proc(ct.PROC_THEME_SYNTAX_GET, ''),
             'color_changed':    get_color('changed_color',  t.get('color_changed')),
             'color_added':      get_color('added_color',    t.get('color_added')),
