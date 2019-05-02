@@ -65,12 +65,12 @@ OPTS_META    = [
      'frm':'float',
      'chp':'config',
     },
-    #{'opt':'differ.keep_caret_visible',
-    # 'cmt':'On sync-scrolling, keep carets in both editors visible on current screen area',
-    # 'def': False,
-    # 'frm':'bool',
-    # 'chp':'config',
-    #},
+    {'opt':'differ.keep_caret_visible',
+     'cmt':'On sync-scrolling, keep carets in both editors visible on current screen area',
+     'def': False,
+     'frm':'bool',
+     'chp':'config',
+    },
 ]
 
 def get_opt(key, dval=''):
@@ -92,10 +92,10 @@ def msg(s, level=0):
 
 class Command:
     def __init__(self):
+        self.scroll = ScrollSplittedTab(__name__)
         self.cfg = self.get_config()
         self.diff = Differ()
         self.diff_dlg = DifferDialog()
-        self.scroll = ScrollSplittedTab(__name__)
 
     def change_config(self):
         if not os.path.exists(   METAJSONFILE):     # Create meta-info file if no one
@@ -110,7 +110,7 @@ class Command:
             print('Applying Differ options...')
             self.config()
             self.scroll.toggle(self.cfg['sync_scroll'])
-            #self.scroll.keep_caret_visible = self.cfg['keep_caret_visible']
+            self.scroll.keep_caret_visible = self.cfg['keep_caret_visible']
 
     def choose_files(self):
         files = self.diff_dlg.run()
@@ -330,9 +330,11 @@ class Command:
                 get_opt('compare_with_details', True),
             'ratio':
                 get_opt('ratio',  0.75),
-            #'keep_caret_visible':
-            #    get_opt('keep_caret_visible', False),
+            'keep_caret_visible':
+                get_opt('keep_caret_visible', False),
         }
+
+        self.scroll.keep_caret_visible = config['keep_caret_visible']
 
         new_nkind(NKIND_DELETED, config.get('color_deleted'))
         new_nkind(NKIND_ADDED, config.get('color_added'))
