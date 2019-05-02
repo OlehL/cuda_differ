@@ -65,6 +65,12 @@ OPTS_META    = [
      'frm':'float',
      'chp':'config',
     },
+    #{'opt':'differ.keep_caret_visible',
+    # 'cmt':'On sync-scrolling, keep carets in both editors visible on current screen area',
+    # 'def': False,
+    # 'frm':'bool',
+    # 'chp':'config',
+    #},
 ]
 
 def get_opt(key, dval=''):
@@ -100,9 +106,11 @@ class Command:
                 how = dict(hide_lex_fil=True,       # If option has not setting for lexer/cur.file
                            stor_json = JSONFILE),
             ).show('Differ Options'):               # Dialog caption
-           # Need to use updated options
-           print('Applying options...')
-           #???
+
+            print('Applying Differ options...')
+            self.config()
+            self.scroll.toggle(self.cfg['sync_scroll'])
+            #self.scroll.keep_caret_visible = self.cfg['keep_caret_visible']
 
     def choose_files(self):
         files = self.diff_dlg.run()
@@ -312,7 +320,8 @@ class Command:
             'color_gaps':       get_color('gap_color',      ct.COLOR_NONE),
             'sync_scroll':          get_opt('sync_scroll', DEFAULT_SYNC_SCROLL == '1'),
             'compare_with_details': get_opt('compare_with_details', True),
-            'ratio':                get_opt('ratio',  0.75)
+            'ratio':                get_opt('ratio',  0.75),
+            #'keep_caret_visible':   get_opt('keep_caret_visible', False),
         }
 
         new_nkind(NKIND_DELETED, config.get('color_deleted'))
