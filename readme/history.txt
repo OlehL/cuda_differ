@@ -1,4 +1,8 @@
 
+2019.04.30
+* change: config is now saved in JSON format
++ add: command "Config" shows dialog like in Options Editor plugin
+
 2019.04.23
 + add: commands "Jump to next diffecence", "Jump to previous difference"
 

@@ -5,6 +5,10 @@ from .differ import Differ
 from .scroll import ScrollSplittedTab
 from .ui import DifferDialog, file_history
 
+import json
+import cudax_lib    as ctx
+import cuda_options_editor as op_ed
+
 
 DIFF_TAG = 148
 NKIND_DELETED = 24
@@ -12,9 +16,63 @@ NKIND_ADDED = 25
 NKIND_CHANGED = 26
 GAP_WIDTH = 5000
 DECOR_CHAR = '■'
-INIFILE = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'cuda_differ.ini')
 DEFAULT_SYNC_SCROLL = '1'
 
+
+METAJSONFILE = os.path.dirname(__file__)+os.sep+'differ_opts.json'
+JSONFILE     = 'cuda_differ.json'    # To store in settings/cuda_differ.json
+JSONPATH     = ct.app_path(ct.APP_DIR_SETTINGS)+os.sep+JSONFILE
+OPTS_META    = [
+    {'opt':'differ.changed_color',
+     'cmt':'Color of changed lines',
+     'def':'',
+     'frm':'#rgb-e',
+     'chp':'colors',
+    },
+    {'opt':'differ.added_color',
+     'cmt':'Color of added lines',
+     'def':'',
+     'frm':'#rgb-e',
+     'chp':'colors',
+    },
+    {'opt':'differ.deleted_color',
+     'cmt':'Color of deleted lines',
+     'def':'',
+     'frm':'#rgb-e',
+     'chp':'colors',
+    },
+    {'opt':'differ.gap_color',
+     'cmt':'Color of inter-line gap background',
+     'def':'',
+     'frm':'#rgb-e',
+     'chp':'colors',
+    },
+    {'opt':'differ.enable_scroll_default',
+     'cmt':'Enable automatical sync-scrolling in both compared files',
+     'def':True,
+     'frm':'bool',
+     'chp':'config',
+    },
+    {'opt':'differ.compare_with_details',
+     'cmt':'Detailed compare',
+     'def':True,
+     'frm':'bool',
+     'chp':'config',
+    },
+    {'opt':'differ.ratio',
+     'cmt':'Measure of the sequences’ similarity, float value in the range [0, 1]',
+     'def': 0.75,
+     'frm':'float',
+     'chp':'config',
+    },
+]
+
+def get_opt(key, dval=''):
+    return  ctx.get_opt('differ.'+key,     dval,    user_json=JSONFILE) if ctx.version(0)>='0.6.8' else \
+            ctx.get_opt('differ.'+key,     dval)
+
+#def set_opt(section, key, val):
+#   return ctx.set_opt('differ.'+section+'.'+key,     val,      user_json=JSONFILE)
 
 def msg(s, level=0):
     PLG_NAME = 'Differ'
@@ -34,8 +92,17 @@ class Command:
         self.scroll = ScrollSplittedTab(__name__)
 
     def change_config(self):
-        self.config()
-        ct.file_open(INIFILE)
+        if not os.path.exists(   METAJSONFILE):     # Create meta-info file if no one
+            open(METAJSONFILE, 'w').write(json.dumps(OPTS_META, indent=4))
+        if op_ed.OptEdD(
+                path_keys_info = METAJSONFILE,
+                subset = 'differ.',                 # Key to isolate settings for op_ed plugin
+                how = dict(hide_lex_fil=True,       # If option has not setting for lexer/cur.file
+                           stor_json = JSONFILE),
+            ).show('Differ Options'):               # Dialog caption
+           # Need to use updated options
+           print('Applying options...')
+           #???
 
     def choose_files(self):
         files = self.diff_dlg.run()
@@ -192,32 +259,19 @@ class Command:
         e.bookmark(ct.BOOKMARK2_DELETE_BY_TAG, 0, tag=DIFF_TAG)
 
     def config(self):
-        ini_time = os.path.getmtime(INIFILE)
+        opt_time = os.path.getmtime(JSONPATH) if os.path.exists(JSONPATH) else 0
         theme_name = ct.app_proc(ct.PROC_THEME_SYNTAX_GET, '')
-        if self.cfg.get('ini_time') == ini_time \
-                and self.cfg.get('theme_name') == theme_name:
+        if self.cfg.get('opt_time') == opt_time     and \
+           self.cfg.get('theme_name') == theme_name:
             return
         self.cfg = self.get_config()
 
     def get_config(self):
-        if not os.path.exists(INIFILE):
-            ct.ini_write(INIFILE, 'colors', 'changed', '')
-            ct.ini_write(INIFILE, 'colors', 'added', '')
-            ct.ini_write(INIFILE, 'colors', 'deleted', '')
-            ct.ini_write(INIFILE, 'colors', 'gap', '')
-            ct.ini_write(INIFILE, 'config', 'enable_scroll_default', DEFAULT_SYNC_SCROLL),
-            ct.ini_write(INIFILE, 'config', 'compare_with_details', '1'),
-            ct.ini_write(INIFILE, 'config', 'ratio', '0.75')
 
         def get_color(key, default_color):
-            s = ct.ini_read(INIFILE, 'colors', key, '')
-            f = s.find('#') == 0
-            s = s.strip().lstrip('#')
-            slen = len(s)
-            if slen == 3 and f:
-                return int(s[2]*2 + s[1]*2 + s[0]*2, 16)
-            elif slen == 6 and f:
-                return int(s[4:6] + s[2:4] + s[0:2], 16)
+            s = get_opt(key, '')
+            if s:
+                return ctx.html_color_to_int(s)
             else:
                 return default_color
 
@@ -249,17 +303,16 @@ class Command:
             return th
 
         t = get_theme()
-        # on = ct.ini_read(INIFILE, 'config', 'enable_scroll_default', '1')
         config = {
-            'ini_time': os.path.getmtime(INIFILE),
-            'theme_name': ct.app_proc(ct.PROC_THEME_SYNTAX_GET, ''),
-            'color_changed': get_color('changed', t.get('color_changed')),
-            'color_added': get_color('added', t.get('color_added')),
-            'color_deleted': get_color('deleted', t.get('color_deleted')),
-            'color_gaps': get_color('gap', ct.COLOR_NONE),
-            'enable_scroll': ct.ini_read(INIFILE, 'config', 'enable_scroll_default', DEFAULT_SYNC_SCROLL) == '1',
-            'compare_with_details': ct.ini_read(INIFILE, 'config', 'compare_with_details', '1') == '1',
-            'ratio': float(ct.ini_read(INIFILE, 'config', 'ratio', '0.75'))
+            'opt_time':     os.path.getmtime(JSONPATH) if os.path.exists(JSONPATH) else 0,
+            'theme_name':   ct.app_proc(ct.PROC_THEME_SYNTAX_GET, ''),
+            'color_changed':    get_color('changed_color',  t.get('color_changed')),
+            'color_added':      get_color('added_color',    t.get('color_added')),
+            'color_deleted':    get_color('deleted_color',  t.get('color_deleted')),
+            'color_gaps':       get_color('gap_color',      ct.COLOR_NONE),
+            'enable_scroll':        get_opt('enable_scroll_default', DEFAULT_SYNC_SCROLL == '1'),
+            'compare_with_details': get_opt('compare_with_details', True),
+            'ratio':                get_opt('ratio',  0.75)
         }
 
         new_nkind(NKIND_DELETED, config.get('color_deleted'))
