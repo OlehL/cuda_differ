@@ -98,16 +98,23 @@ class Command:
         self.scroll = ScrollSplittedTab(__name__)
 
     def change_config(self):
-        if not os.path.exists(   METAJSONFILE):     # Create meta-info file if no one
-            open(METAJSONFILE, 'w').write(json.dumps(OPTS_META, indent=4))
-        if op_ed.OptEdD(
-                path_keys_info = METAJSONFILE,
-                subset = 'differ.',                 # Key to isolate settings for op_ed plugin
-                how = dict(hide_lex_fil=True,       # If option has not setting for lexer/cur.file
-                           stor_json = JSONFILE),
-            ).show('Differ Options'):               # Dialog caption
-
-            print('Applying Differ options...')
+        op_ed_dlg   = None
+        subset      = 'differ.',                    # Key to isolate settings for op_ed plugin
+        how         = dict(hide_lex_fil=True,       # If option has not setting for lexer/cur.file
+                           stor_json = JSONFILE)
+        try: # New op_ed allows to skip meta-file
+            op_ed_dlg   = op_ed.OptEdD(
+                path_keys_info = OPTS_META,     subset = subset, how = how)
+        except:
+            # Old op_ed requires to use meta-file
+            if not os.path.exists(METAJSONFILE) \
+            or os.path.os.path.getmtime(METAJSONFILE)<os.path.os.path.getmtime(__file__):
+                # Create/update meta-info file
+                open(METAJSONFILE, 'w').write(json.dumps(OPTS_META, indent=4))
+            op_ed_dlg   = op_ed.OptEdD(
+                path_keys_info = METAJSONFILE,  subset = subset, how = how)
+        if op_ed_dlg.show('Differ Options'):        # Dialog caption
+            # Need to use updated options
             self.config()
             self.scroll.toggle(self.cfg['sync_scroll'])
             #self.scroll.keep_caret_visible = self.cfg['keep_caret_visible']
