@@ -47,14 +47,14 @@ OPTS_META    = [
      'frm':'#rgb-e',
      'chp':'colors',
     },
-    {'opt':'differ.enable_scroll_default',
-     'cmt':'Enable automatical sync-scrolling in both compared files',
+    {'opt':'differ.sync_scroll',
+     'cmt':'Use synchronized scrolling (vertical/horizontal) in two compared files',
      'def':True,
      'frm':'bool',
      'chp':'config',
     },
     {'opt':'differ.compare_with_details',
-     'cmt':'Detailed compare',
+     'cmt':'Perform detailed comparision',
      'def':True,
      'frm':'bool',
      'chp':'config',
@@ -63,6 +63,12 @@ OPTS_META    = [
      'cmt':'Measure of the sequences’ similarity, float value in the range [0, 1]',
      'def': 0.75,
      'frm':'float',
+     'chp':'config',
+    },
+    {'opt':'differ.keep_caret_visible',
+     'cmt':'On sync-scrolling, keep carets in both editors visible on current screen area',
+     'def': False,
+     'frm':'bool',
      'chp':'config',
     },
 ]
@@ -86,23 +92,32 @@ def msg(s, level=0):
 
 class Command:
     def __init__(self):
+        self.scroll = ScrollSplittedTab(__name__)
         self.cfg = self.get_config()
         self.diff = Differ()
         self.diff_dlg = DifferDialog()
-        self.scroll = ScrollSplittedTab(__name__)
 
     def change_config(self):
-        if not os.path.exists(   METAJSONFILE):     # Create meta-info file if no one
-            open(METAJSONFILE, 'w').write(json.dumps(OPTS_META, indent=4))
-        if op_ed.OptEdD(
-                path_keys_info = METAJSONFILE,
-                subset = 'differ.',                 # Key to isolate settings for op_ed plugin
-                how = dict(hide_lex_fil=True,       # If option has not setting for lexer/cur.file
-                           stor_json = JSONFILE),
-            ).show('Differ Options'):               # Dialog caption
-           # Need to use updated options
-           print('Applying options...')
-           #???
+        op_ed_dlg   = None
+        subset      = 'differ.',                    # Key to isolate settings for op_ed plugin
+        how         = dict(hide_lex_fil=True,       # If option has not setting for lexer/cur.file
+                           stor_json = JSONFILE)
+        try: # New op_ed allows to skip meta-file
+            op_ed_dlg   = op_ed.OptEdD(
+                path_keys_info = OPTS_META,     subset = subset, how = how)
+        except:
+            # Old op_ed requires to use meta-file
+            if not os.path.exists(METAJSONFILE) \
+            or os.path.os.path.getmtime(METAJSONFILE)<os.path.os.path.getmtime(__file__):
+                # Create/update meta-info file
+                open(METAJSONFILE, 'w').write(json.dumps(OPTS_META, indent=4))
+            op_ed_dlg   = op_ed.OptEdD(
+                path_keys_info = METAJSONFILE,  subset = subset, how = how)
+        if op_ed_dlg.show('Differ Options'):        # Dialog caption
+            # Need to use updated options
+            self.config()
+            self.scroll.toggle(self.cfg['sync_scroll'])
+            self.scroll.keep_caret_visible = self.cfg['keep_caret_visible']
 
     def choose_files(self):
         files = self.diff_dlg.run()
@@ -145,7 +160,7 @@ class Command:
 
     def on_tab_change(self, ed_self):
         self.config()
-        self.scroll.toggle(self.cfg.get('enable_scroll'))
+        self.scroll.toggle(self.cfg.get('sync_scroll'))
 
     def refresh(self):
         if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
@@ -187,7 +202,7 @@ class Command:
                            b_text_all.splitlines(True))
 
         self.scroll.tab_id.add(ct.ed.get_prop(ct.PROP_TAB_ID))
-        self.scroll.toggle(self.cfg.get('enable_scroll'))
+        self.scroll.toggle(self.cfg.get('sync_scroll'))
 
         for d in self.diff.compare(self.cfg.get('compare_with_details'), self.cfg.get('ratio')):
             diff_id, y = d[0], d[1]
@@ -304,16 +319,29 @@ class Command:
 
         t = get_theme()
         config = {
-            'opt_time':     os.path.getmtime(JSONPATH) if os.path.exists(JSONPATH) else 0,
-            'theme_name':   ct.app_proc(ct.PROC_THEME_SYNTAX_GET, ''),
-            'color_changed':    get_color('changed_color',  t.get('color_changed')),
-            'color_added':      get_color('added_color',    t.get('color_added')),
-            'color_deleted':    get_color('deleted_color',  t.get('color_deleted')),
-            'color_gaps':       get_color('gap_color',      ct.COLOR_NONE),
-            'enable_scroll':        get_opt('enable_scroll_default', DEFAULT_SYNC_SCROLL == '1'),
-            'compare_with_details': get_opt('compare_with_details', True),
-            'ratio':                get_opt('ratio',  0.75)
+            'opt_time':
+                os.path.getmtime(JSONPATH) if os.path.exists(JSONPATH) else 0,
+            'theme_name':
+                ct.app_proc(ct.PROC_THEME_SYNTAX_GET, ''),
+            'color_changed':
+                get_color('changed_color', t.get('color_changed')),
+            'color_added':
+                get_color('added_color', t.get('color_added')),
+            'color_deleted':
+                get_color('deleted_color', t.get('color_deleted')),
+            'color_gaps':
+                get_color('gap_color', ct.COLOR_NONE),
+            'sync_scroll':
+                get_opt('sync_scroll', DEFAULT_SYNC_SCROLL == '1'),
+            'compare_with_details':
+                get_opt('compare_with_details', True),
+            'ratio':
+                get_opt('ratio',  0.75),
+            'keep_caret_visible':
+                get_opt('keep_caret_visible', False),
         }
+
+        self.scroll.keep_caret_visible = config['keep_caret_visible']
 
         new_nkind(NKIND_DELETED, config.get('color_deleted'))
         new_nkind(NKIND_ADDED, config.get('color_added'))

@@ -2,7 +2,12 @@ import cudatext as ct
 import cudatext_cmd as ct_cmd
 
 
+def show_caret(e):
+
+    e.cmd(ct_cmd.cCommand_GotoScreenTop)
+
 class ScrollSplittedTab:
+    keep_caret_visible = False
 
     def __init__(self, name):
         self.name = name
@@ -35,5 +40,9 @@ class ScrollSplittedTab:
 
         e.set_prop(ct.PROP_SCROLL_VERT_SMOOTH, pos_v)
         e.set_prop(ct.PROP_SCROLL_HORZ_SMOOTH, pos_h)
+
+        if self.keep_caret_visible:
+            show_caret(ed_self)
+            show_caret(e)
 
         e.cmd(ct_cmd.cmd_RepaintEditor)

@@ -1,4 +1,7 @@
 
+2019.05.02
++ add: option "Keep caret visible on sync-scrolling"
+
 2019.04.30
 * change: config is now saved in JSON format
 + add: command "Config" shows dialog like in Options Editor plugin
