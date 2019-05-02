@@ -312,16 +312,26 @@ class Command:
 
         t = get_theme()
         config = {
-            'opt_time':     os.path.getmtime(JSONPATH) if os.path.exists(JSONPATH) else 0,
-            'theme_name':   ct.app_proc(ct.PROC_THEME_SYNTAX_GET, ''),
-            'color_changed':    get_color('changed_color',  t.get('color_changed')),
-            'color_added':      get_color('added_color',    t.get('color_added')),
-            'color_deleted':    get_color('deleted_color',  t.get('color_deleted')),
-            'color_gaps':       get_color('gap_color',      ct.COLOR_NONE),
-            'sync_scroll':          get_opt('sync_scroll', DEFAULT_SYNC_SCROLL == '1'),
-            'compare_with_details': get_opt('compare_with_details', True),
-            'ratio':                get_opt('ratio',  0.75),
-            #'keep_caret_visible':   get_opt('keep_caret_visible', False),
+            'opt_time':
+                os.path.getmtime(JSONPATH) if os.path.exists(JSONPATH) else 0,
+            'theme_name':
+                ct.app_proc(ct.PROC_THEME_SYNTAX_GET, ''),
+            'color_changed':
+                get_color('changed_color', t.get('color_changed')),
+            'color_added':
+                get_color('added_color', t.get('color_added')),
+            'color_deleted':
+                get_color('deleted_color', t.get('color_deleted')),
+            'color_gaps':
+                get_color('gap_color', ct.COLOR_NONE),
+            'sync_scroll':
+                get_opt('sync_scroll', DEFAULT_SYNC_SCROLL == '1'),
+            'compare_with_details':
+                get_opt('compare_with_details', True),
+            'ratio':
+                get_opt('ratio',  0.75),
+            #'keep_caret_visible':
+            #    get_opt('keep_caret_visible', False),
         }
 
         new_nkind(NKIND_DELETED, config.get('color_deleted'))
