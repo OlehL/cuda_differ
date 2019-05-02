@@ -47,14 +47,14 @@ OPTS_META    = [
      'frm':'#rgb-e',
      'chp':'colors',
     },
-    {'opt':'differ.enable_scroll_default',
-     'cmt':'Enable automatical sync-scrolling in both compared files',
+    {'opt':'differ.sync_scroll',
+     'cmt':'Use synchronized scrolling (vertical/horizontal) in two compared files',
      'def':True,
      'frm':'bool',
      'chp':'config',
     },
     {'opt':'differ.compare_with_details',
-     'cmt':'Detailed compare',
+     'cmt':'Perform detailed comparision',
      'def':True,
      'frm':'bool',
      'chp':'config',
@@ -145,7 +145,7 @@ class Command:
 
     def on_tab_change(self, ed_self):
         self.config()
-        self.scroll.toggle(self.cfg.get('enable_scroll'))
+        self.scroll.toggle(self.cfg.get('sync_scroll'))
 
     def refresh(self):
         if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
@@ -187,7 +187,7 @@ class Command:
                            b_text_all.splitlines(True))
 
         self.scroll.tab_id.add(ct.ed.get_prop(ct.PROP_TAB_ID))
-        self.scroll.toggle(self.cfg.get('enable_scroll'))
+        self.scroll.toggle(self.cfg.get('sync_scroll'))
 
         for d in self.diff.compare(self.cfg.get('compare_with_details'), self.cfg.get('ratio')):
             diff_id, y = d[0], d[1]
@@ -310,7 +310,7 @@ class Command:
             'color_added':      get_color('added_color',    t.get('color_added')),
             'color_deleted':    get_color('deleted_color',  t.get('color_deleted')),
             'color_gaps':       get_color('gap_color',      ct.COLOR_NONE),
-            'enable_scroll':        get_opt('enable_scroll_default', DEFAULT_SYNC_SCROLL == '1'),
+            'sync_scroll':          get_opt('sync_scroll', DEFAULT_SYNC_SCROLL == '1'),
             'compare_with_details': get_opt('compare_with_details', True),
             'ratio':                get_opt('ratio',  0.75)
         }
