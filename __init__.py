@@ -1,14 +1,11 @@
 ﻿import os
+import json
 import cudatext as ct
 import cudatext_cmd as ct_cmd
+import cudax_lib as ctx
 from .differ import Differ
 from .scroll import ScrollSplittedTab
 from .ui import DifferDialog, file_history
-
-import json
-import cudax_lib    as ctx
-import cuda_options_editor as op_ed
-
 
 DIFF_TAG = 148
 NKIND_DELETED = 24
@@ -98,8 +95,9 @@ class Command:
         self.diff_dlg = DifferDialog()
 
     def change_config(self):
+        import cuda_options_editor as op_ed
         op_ed_dlg   = None
-        subset      = 'differ.',                    # Key to isolate settings for op_ed plugin
+        subset      = 'differ.'                     # Key to isolate settings for op_ed plugin
         how         = dict(hide_lex_fil=True,       # If option has not setting for lexer/cur.file
                            stor_json = JSONFILE)
         try: # New op_ed allows to skip meta-file
