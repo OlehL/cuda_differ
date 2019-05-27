@@ -1,4 +1,7 @@
 
+2019.05.28
+* changed option "ratio" (float) to "ratio_percents" (integer)
+
 2019.05.02
 + add: option "Keep caret visible on sync-scrolling"
 
