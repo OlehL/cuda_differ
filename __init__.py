@@ -56,10 +56,10 @@ OPTS_META    = [
      'frm':'bool',
      'chp':'config',
     },
-    {'opt':'differ.ratio',
-     'cmt':'Measure of the sequences’ similarity, float value in the range [0, 1]',
-     'def': 0.75,
-     'frm':'float',
+    {'opt':'differ.ratio_percents',
+     'cmt':'Measure of the sequences’ similarity, in percents',
+     'def': 75,
+     'frm':'int',
      'chp':'config',
     },
     {'opt':'differ.keep_caret_visible',
@@ -334,7 +334,7 @@ class Command:
             'compare_with_details':
                 get_opt('compare_with_details', True),
             'ratio':
-                get_opt('ratio',  0.75),
+                get_opt('ratio_percents',  75)/100,
             'keep_caret_visible':
                 get_opt('keep_caret_visible', False),
         }
