@@ -1,4 +1,7 @@
 
+2019.07.16
+- avoid deprecated API
+
 2019.05.28
 * changed option "ratio" (float) to "ratio_percents" (integer)
 
