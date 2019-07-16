@@ -362,8 +362,8 @@ class Command:
         items1 = [i['line'] for i in items1 if i['tag']==DIFF_TAG]
         #print('i1', items1)
 
-        items2 = ct.ed.gap(ct.GAP_GET_LIST, 0, 0) or []
-        items2 = [i[0] for i in items2 if i[1]==DIFF_TAG]
+        items2 = ct.ed.gap(ct.GAP_GET_ALL, 0, 0) or []
+        items2 = [i['line'] for i in items2 if i['tag']==DIFF_TAG]
         #print('i2', items2)
 
         items2 = [i for i in items2 if i not in items1]
