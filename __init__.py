@@ -296,23 +296,11 @@ class Command:
                            )
 
         def get_theme():
+            data = ct.app_proc(ct.PROC_THEME_SYNTAX_DICT_GET, '')
             th = {}
-            for i in ct.app_proc(ct.PROC_THEME_SYNTAX_DATA_GET, ''):
-                if i.get('name') == 'LightBG2':
-                    cb = i.get('color_back')
-                    if cb == '':
-                        cb = 0x003030
-                    th.setdefault('color_changed', cb)
-                if i.get('name') == 'LightBG3':
-                    cb = i.get('color_back')
-                    if cb == '':
-                        cb = 0x124200
-                    th.setdefault('color_added', cb)
-                if i.get('name') == 'LightBG1':
-                    cb = i.get('color_back')
-                    if cb == '':
-                        cb = 0x07003D
-                    th.setdefault('color_deleted', cb)
+            th['color_changed'] = data['LightBG2']['color_back']
+            th['color_added'] = data['LightBG3']['color_back'] 
+            th['color_deleted'] = data['LightBG1']['color_back']
             return th
 
         t = get_theme()

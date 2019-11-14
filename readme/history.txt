@@ -1,4 +1,7 @@
 
+2019.11.14
+- avoid deleted API
+
 2019.07.16
 - avoid deprecated API
 
