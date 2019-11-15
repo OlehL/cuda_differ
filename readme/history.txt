@@ -1,3 +1,7 @@
+2019.11.15
+* changed: commands "Jump to next diffecence", "Jump to previous difference"
++ add: command "Copy current difference to left"
++ add: command "Copy current difference to right"
 
 2019.11.14
 - avoid deleted API

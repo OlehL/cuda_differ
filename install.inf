@@ -26,6 +26,16 @@ section=commands
 caption=Differ\Jump to previous difference
 method=jump_prev
 
+[item8]
+section=commands
+caption=Differ\Copy current difference to right
+method=copy_right
+
+[item9]
+section=commands
+caption=Differ\Copy current difference to left
+method=copy_left
+
 [item10]
 section=commands
 caption=Differ\Config...

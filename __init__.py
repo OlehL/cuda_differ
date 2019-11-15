@@ -1,11 +1,14 @@
 ﻿import os
 import json
+
 import cudatext as ct
 import cudatext_cmd as ct_cmd
 import cudax_lib as ctx
-from .differ import Differ
+
+from . import differ as df
 from .scroll import ScrollSplittedTab
 from .ui import DifferDialog, file_history
+
 
 DIFF_TAG = 148
 NKIND_DELETED = 24
@@ -15,67 +18,66 @@ GAP_WIDTH = 5000
 DECOR_CHAR = '■'
 DEFAULT_SYNC_SCROLL = '1'
 
-
-METAJSONFILE = os.path.dirname(__file__)+os.sep+'differ_opts.json'
-JSONFILE     = 'cuda_differ.json'    # To store in settings/cuda_differ.json
-JSONPATH     = ct.app_path(ct.APP_DIR_SETTINGS)+os.sep+JSONFILE
-OPTS_META    = [
-    {'opt':'differ.changed_color',
-     'cmt':'Color of changed lines',
-     'def':'',
-     'frm':'#rgb-e',
-     'chp':'colors',
-    },
-    {'opt':'differ.added_color',
-     'cmt':'Color of added lines',
-     'def':'',
-     'frm':'#rgb-e',
-     'chp':'colors',
-    },
-    {'opt':'differ.deleted_color',
-     'cmt':'Color of deleted lines',
-     'def':'',
-     'frm':'#rgb-e',
-     'chp':'colors',
-    },
-    {'opt':'differ.gap_color',
-     'cmt':'Color of inter-line gap background',
-     'def':'',
-     'frm':'#rgb-e',
-     'chp':'colors',
-    },
-    {'opt':'differ.sync_scroll',
-     'cmt':'Use synchronized scrolling (vertical/horizontal) in two compared files',
-     'def':True,
-     'frm':'bool',
-     'chp':'config',
-    },
-    {'opt':'differ.compare_with_details',
-     'cmt':'Perform detailed comparision',
-     'def':True,
-     'frm':'bool',
-     'chp':'config',
-    },
-    {'opt':'differ.ratio_percents',
-     'cmt':'Measure of the sequences’ similarity, in percents',
-     'def': 75,
-     'frm':'int',
-     'chp':'config',
-    },
-    {'opt':'differ.keep_caret_visible',
-     'cmt':'On sync-scrolling, keep carets in both editors visible on current screen area',
-     'def': False,
-     'frm':'bool',
-     'chp':'config',
-    },
+METAJSONFILE = os.path.dirname(__file__) + os.sep + 'differ_opts.json'
+JSONFILE = 'cuda_differ.json'  # To store in settings/cuda_differ.json
+JSONPATH = ct.app_path(ct.APP_DIR_SETTINGS) + os.sep + JSONFILE
+OPTS_META = [
+    {'opt': 'differ.changed_color',
+     'cmt': 'Color of changed lines',
+     'def': '',
+     'frm': '#rgb-e',
+     'chp': 'colors',
+     },
+    {'opt': 'differ.added_color',
+     'cmt': 'Color of added lines',
+     'def': '',
+     'frm': '#rgb-e',
+     'chp': 'colors',
+     },
+    {'opt': 'differ.deleted_color',
+     'cmt': 'Color of deleted lines',
+     'def': '',
+     'frm': '#rgb-e',
+     'chp': 'colors',
+     },
+    {'opt': 'differ.gap_color',
+     'cmt': 'Color of inter-line gap background',
+     'def': '',
+     'frm': '#rgb-e',
+     'chp': 'colors',
+     },
+    {'opt': 'differ.sync_scroll',
+     'cmt': 'Use synchronized scrolling (vertical/horizontal) in two compared files',
+     'def': True,
+     'frm': 'bool',
+     'chp': 'config',
+     },
+    {'opt': 'differ.compare_with_details',
+     'cmt': 'Perform detailed comparision',
+     'def': True,
+     'frm': 'bool',
+     'chp': 'config',
+     },
+    {'opt': 'differ.ratio_percents',
+     'cmt': 'Measure of the sequences’ similarity, in percents',
+     'def':  75,
+     'frm': 'int',
+     'chp': 'config',
+     },
+    {'opt': 'differ.keep_caret_visible',
+     'cmt': 'On sync-scrolling, keep carets in both editors visible on current screen area',
+     'def':  False,
+     'frm': 'bool',
+     'chp': 'config',
+     },
 ]
 
-def get_opt(key, dval=''):
-    return  ctx.get_opt('differ.'+key,     dval,    user_json=JSONFILE) if ctx.version(0)>='0.6.8' else \
-            ctx.get_opt('differ.'+key,     dval)
 
-#def set_opt(section, key, val):
-#   return ctx.set_opt('differ.'+section+'.'+key,     val,      user_json=JSONFILE)
+def get_opt(key, dval=''):
+    return ctx.get_opt('differ.' + key, dval, user_json=JSONFILE) \
+           if ctx.version(0) >= '0.6.8' \
+           else ctx.get_opt('differ.' + key, dval)
+
 
 def msg(s, level=0):
     PLG_NAME = 'Differ'
@@ -91,27 +93,28 @@ class Command:
     def __init__(self):
         self.scroll = ScrollSplittedTab(__name__)
         self.cfg = self.get_config()
-        self.diff = Differ()
+        self.diff = df.Differ()
         self.diff_dlg = DifferDialog()
+        self.curdiff = 0
 
     def change_config(self):
         import cuda_options_editor as op_ed
-        op_ed_dlg   = None
-        subset      = 'differ.'                     # Key to isolate settings for op_ed plugin
-        how         = dict(hide_lex_fil=True,       # If option has not setting for lexer/cur.file
-                           stor_json = JSONFILE)
-        try: # New op_ed allows to skip meta-file
+        op_ed_dlg = None
+        subset = 'differ.'  # Key to isolate settings for op_ed plugin
+        how = dict(hide_lex_fil = True,  # If option has not setting for lexer/cur.file
+                   stor_json = JSONFILE)
+        try:  # New op_ed allows to skip meta-file
             op_ed_dlg   = op_ed.OptEdD(
                 path_keys_info = OPTS_META,     subset = subset, how = how)
         except:
             # Old op_ed requires to use meta-file
             if not os.path.exists(METAJSONFILE) \
-            or os.path.os.path.getmtime(METAJSONFILE)<os.path.os.path.getmtime(__file__):
+            or os.path.getmtime(METAJSONFILE) < os.path.getmtime(__file__):
                 # Create/update meta-info file
                 open(METAJSONFILE, 'w').write(json.dumps(OPTS_META, indent=4))
-            op_ed_dlg   = op_ed.OptEdD(
-                path_keys_info = METAJSONFILE,  subset = subset, how = how)
-        if op_ed_dlg.show('Differ Options'):        # Dialog caption
+            op_ed_dlg = op_ed.OptEdD(
+                path_keys_info = METAJSONFILE, subset = subset, how = how)
+        if op_ed_dlg.show('Differ Options'):  # Dialog caption
             # Need to use updated options
             self.config()
             self.scroll.toggle(self.cfg['sync_scroll'])
@@ -153,11 +156,6 @@ class Command:
             if not e:
                 ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_ONE)
 
-    def on_state(self, ed_self, state):
-        if state==ct.APPSTATE_THEME_SYNTAX:
-            self.get_config()
-            self.refresh()
-
     def on_scroll(self, ed_self):
         self.scroll.on_scroll(ed_self)
 
@@ -166,6 +164,7 @@ class Command:
         self.scroll.toggle(self.cfg.get('sync_scroll'))
 
     def refresh(self):
+        self.curdiff = 0
         if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
             return
 
@@ -207,33 +206,36 @@ class Command:
         self.scroll.tab_id.add(ct.ed.get_prop(ct.PROP_TAB_ID))
         self.scroll.toggle(self.cfg.get('sync_scroll'))
 
-        for d in self.diff.compare(self.cfg.get('compare_with_details'), self.cfg.get('ratio')):
+        self.diff.withdetail = self.cfg.get('compare_with_details')
+        self.diff.ratio = self.cfg.get('ratio')
+
+        for d in self.diff.compare():
             diff_id, y = d[0], d[1]
-            if diff_id == '-':
+            if diff_id == df.A_LINE_DEL:
                 self.set_bookmark2(a_ed, y, NKIND_DELETED)
                 self.set_decor(a_ed, y, DECOR_CHAR, self.cfg.get('color_deleted'))
-            elif diff_id == '+':
+            elif diff_id == df.B_LINE_ADD:
                 self.set_bookmark2(b_ed, y, NKIND_ADDED)
                 self.set_decor(b_ed, y, DECOR_CHAR, self.cfg.get('color_added'))
-            elif diff_id == '-*':
+            elif diff_id == df.A_LINE_CHANGE:
                 self.set_bookmark2(a_ed, y, NKIND_CHANGED)
-            elif diff_id == '+*':
+            elif diff_id == df.B_LINE_CHANGE:
                 self.set_bookmark2(b_ed, y, NKIND_CHANGED)
-            elif diff_id == '-^':
+            elif diff_id == df.A_GAP:
                 self.set_gap(a_ed, y, d[2])
-            elif diff_id == '+^':
+            elif diff_id == df.B_GAP:
                 self.set_gap(b_ed, y, d[2])
-            elif diff_id == '++':
-                self.set_attr(b_ed, d[2], y, d[3], self.cfg.get('color_added'))
-            elif diff_id == '--':
+            elif diff_id == df.A_SYMBOL_DEL:
                 self.set_attr(a_ed, d[2], y, d[3], self.cfg.get('color_deleted'))
-            elif diff_id == '-y':
+            elif diff_id == df.B_SYMBOL_ADD:
+                self.set_attr(b_ed, d[2], y, d[3], self.cfg.get('color_added'))
+            elif diff_id == df.A_DECOR_YELLOW:
                 self.set_decor(a_ed, y, DECOR_CHAR, self.cfg.get('color_changed'))
-            elif diff_id == '+y':
+            elif diff_id == df.B_DECOR_YELLOW:
                 self.set_decor(b_ed, y, DECOR_CHAR, self.cfg.get('color_changed'))
-            elif diff_id == '-r':
+            elif diff_id == df.A_DECOR_RED:
                 self.set_decor(a_ed, y, DECOR_CHAR, self.cfg.get('color_deleted'))
-            elif diff_id == '+g':
+            elif diff_id == df.B_DECOR_GREEN:
                 self.set_decor(b_ed, y, DECOR_CHAR, self.cfg.get('color_added'))
 
     def set_attr(self, e, x, y, nlen, bg):
@@ -279,7 +281,7 @@ class Command:
     def config(self):
         opt_time = os.path.getmtime(JSONPATH) if os.path.exists(JSONPATH) else 0
         theme_name = ct.app_proc(ct.PROC_THEME_SYNTAX_GET, '')
-        if self.cfg.get('opt_time') == opt_time     and \
+        if self.cfg.get('opt_time') == opt_time and \
            self.cfg.get('theme_name') == theme_name:
             return
         self.cfg = self.get_config()
@@ -340,52 +342,113 @@ class Command:
 
         return config
 
-
     def clear_history(self):
-
         file_history.clear()
         file_history.save()
 
+    def jump(self):
+        if not self.diff.diffmap:
+            return ct.msg_status("No find difference")
+        if len(self.diff.diffmap) == 1:
+            ct.msg_status("Found only one difference")
+        hndl_primary = ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY)
+        hndl_secondary = ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY)
+        a_ed = ct.Editor(hndl_primary)
+        b_ed = ct.Editor(hndl_secondary)
 
-    def jump(self, next):
-
-        # merge two lists, Decor and Gaps, into single list of line numbers
-
-        items1 = ct.ed.decor(ct.DECOR_GET_ALL) or []
-        items1 = [i['line'] for i in items1 if i['tag']==DIFF_TAG]
-        #print('i1', items1)
-
-        items2 = ct.ed.gap(ct.GAP_GET_ALL, 0, 0) or []
-        items2 = [i['line'] for i in items2 if i['tag']==DIFF_TAG]
-        #print('i2', items2)
-
-        items2 = [i for i in items2 if i not in items1]
-        items = sorted(items1+items2)
-        if not items: return
-        #print('i', items)
-
-        x, y, x2, y2 = ct.ed.get_carets()[0]
-
-        if next:
-            items = [i for i in items if i>y]
-            if not items:
-                return ct.msg_status('Cannot find next difference')
-            y = items[0]
-        else:
-            items = [i for i in items if i<y]
-            if not items:
-                return ct.msg_status('Cannot find previous difference')
-            y = items[-1]
-
-        ct.ed.set_caret(0, y, -1, -1)
-        ct.msg_status('Jumped to line %d'%(y+1))
-
+        current = self.diff.diffmap[self.curdiff]
+        a_ed.set_caret(0, current[0], 0, current[1], ct.CARET_SET_ONE)
+        b_ed.set_caret(0, current[2], 0, current[3], ct.CARET_SET_ONE)
 
     def jump_next(self):
-
-        self.jump(True)
+        if not self.diff.diffmap:
+            return
+        self.curdiff += 1
+        if self.curdiff >= len(self.diff.diffmap):
+            self.curdiff = 0
+        self.jump()
 
     def jump_prev(self):
+        if not self.diff.diffmap:
+            return
+        self.curdiff -= 1
+        if self.curdiff < 0:
+            self.curdiff = len(self.diff.diffmap)-1
+        self.jump()
 
-        self.jump(False)
+    def copy(self, copy_to_tight=True):
+        if not self.diff.diffmap:
+            return
+        hndl_self = ct.ed.get_prop(ct.PROP_HANDLE_SELF)
+        hndl_primary = ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY)
+        hndl_secondary = ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY)
+        if hndl_self == hndl_primary:
+            current_primary = True
+        else:
+            current_primary = False
 
+        x, y, x2, y2 = ct.ed.get_carets()[0]
+        for cd in self.diff.diffmap:
+            if current_primary:
+                p0 = cd[0]
+                p1 = cd[1]
+            else:
+                p0 = cd[2]
+                p1 = cd[3]
+            if y in range(p0, p1):
+                a0, a1, b0, b1 = cd
+                self.curdiff = self.diff.diffmap.index(cd)
+                self.diff.diffmap.pop(self.curdiff)
+                print(cd)
+                break
+        else:
+            return
+
+        a_ed = ct.Editor(hndl_primary)
+        b_ed = ct.Editor(hndl_secondary)
+
+        if copy_to_tight:
+            text = a_ed.get_text_substr(0, a0, 0, a1)
+        else:
+            text = b_ed.get_text_substr(0, b0, 0, b1)
+        a_ed.gap(ct.GAP_DELETE, a0-1, a1)
+        b_ed.gap(ct.GAP_DELETE, b0-1, b1)
+        a_ed.attr(ct.MARKERS_DELETE_BY_TAG, tag=DIFF_TAG)
+        b_ed.attr(ct.MARKERS_DELETE_BY_TAG, tag=DIFF_TAG)
+        a_ed.delete(0, a0, 0, a1)
+        b_ed.delete(0, b0, 0, b1)
+        if text:
+            a_ed.insert(0, a0, text)
+            b_ed.insert(0, b0, text)
+
+        if copy_to_tight:
+            delta = (b1 - b0) - (a1 - a0)
+            for n in range(self.curdiff, len(self.diff.diffmap)):
+                self.diff.diffmap[n][2] -= delta
+                self.diff.diffmap[n][3] -= delta
+        else:
+            delta = (a1 - a0) - (b1 - b0)
+            for n in range(self.curdiff, len(self.diff.diffmap)):
+                self.diff.diffmap[n][0] -= delta
+                self.diff.diffmap[n][1] -= delta
+
+    def copy_right(self):
+        self.copy(True)
+
+    def copy_left(self):
+        self.copy(False)
+
+    # def focus_to_opposit_panel(self):
+    #     if ct.ed.get_prop(ct.PROP_SPLIT)[0] == '-':
+    #         print(1)
+    #         return
+    #     hndl_self = ct.ed.get_prop(ct.PROP_HANDLE_SELF)
+    #     hndl_primary = ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY)
+    #     hndl_secondary = ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY)
+    #     print(hndl_self, hndl_primary, hndl_secondary)
+    #     if hndl_self == hndl_primary:
+    #         e = ct.Editor(hndl_secondary)
+    #         e.focus()
+    #     else:
+    #         e = ct.Editor(hndl_primary)
+    #         e.focus()

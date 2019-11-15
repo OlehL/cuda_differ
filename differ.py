@@ -1,6 +1,20 @@
 from difflib import SequenceMatcher, _count_leading
 
 
+A_LINE_DEL = '-'
+B_LINE_ADD = '+'
+A_LINE_CHANGE = '-*'
+B_LINE_CHANGE = '+*'
+A_GAP = '-^'
+B_GAP = '+^'
+A_SYMBOL_DEL = '--'
+B_SYMBOL_ADD = '++'
+A_DECOR_YELLOW = '-y'
+A_DECOR_RED = '-r'
+B_DECOR_YELLOW = '+y'
+B_DECOR_GREEN = '+g'
+
+
 class Differ:
     """
     compare function return tuples for paint text
@@ -18,55 +32,60 @@ class Differ:
               return (id, y, x, nlen)
     """
     def __init__(self, a='', b=''):
-        self.a = a
-        self.b = b
-        self.diff = SequenceMatcher(None, a, b)
+        self.withdetail = True
+        self.ratio = 0.75
+        self.set_seqs(a, b)
 
     def set_seqs(self, a, b):
         self.a = a
         self.b = b
-        self.diff.set_seqs(a, b)
 
-    def compare(self, withdetail=True, ratio=0.75):
-        self.cut = ratio
+    def compare(self):
+        self.diffmap = []
         diff = SequenceMatcher(None, self.a, self.b)
-        if withdetail:
-            for tag, i1, i2, j1, j2 in diff.get_opcodes():
-                delta = abs(i1-i2-j1+j2)
-                if tag == 'delete':
-                    yield ('+^', j2, delta)
+        # if withdetail:
+        #     for tag, i1, i2, j1, j2 in diff.get_opcodes():
+        #         delta = abs(i1-i2-j1+j2)
+        #         if tag == 'delete':
+        #             yield ('+^', j2, delta)
+        #             for y in range(i1, i2):
+        #                 yield ('-', y)
+        #         elif tag == 'insert':
+        #             yield ('-^', i2, delta)
+        #             for y in range(j1, j2):
+        #                 yield ('+', y)
+        #         elif tag == 'replace':
+        #             yield from self._fancy_replace(self.a, i1, i2, self.b, j1, j2)
+        # else:
+        for tag, i1, i2, j1, j2 in diff.get_opcodes():
+            if tag != 'equal':
+                delta = i1-i2-j1+j2
+                if delta > 0:
+                    yield (A_GAP, i2, delta)
+                elif delta < 0:
+                    yield (B_GAP, j2, abs(delta))
+                self.diffmap.append([i1, i2, j1, j2])
+            if tag == 'delete':
+                for y in range(i1, i2):
+                    yield (A_LINE_DEL, y)
+            elif tag == 'insert':
+                for y in range(j1, j2):
+                    yield (B_LINE_ADD, y)
+            elif tag == 'replace':
+                if self.withdetail:
+                    yield from self._fancy_replace(self.a, i1, i2,
+                                                   self.b, j1, j2)
+                else:
                     for y in range(i1, i2):
-                        yield ('-', y)
-                elif tag == 'insert':
-                    yield ('-^', i2, delta)
-                    for y in range(j1, j2):
-                        yield ('+', y)
-                elif tag == 'replace':
-                    yield from self._fancy_replace(self.a, i1, i2, self.b, j1, j2)
-        else:
-            for tag, i1, i2, j1, j2 in diff.get_opcodes():
-                if tag != 'equal':
-                    delta = i1-i2-j1+j2
-                    if delta > 0:
-                        yield ('-^', i2, delta)
-                    elif delta < 0:
-                        yield ('+^', j2, abs(delta))
-                if tag == 'delete':
-                    for y in range(i1, i2):
-                        yield ('-', y)
-                elif tag == 'insert':
-                    for y in range(j1, j2):
-                        yield ('+', y)
-                elif tag == 'replace':
-                    for y in range(i1, i2):
-                        yield ('-*', y)
+                        yield (A_LINE_CHANGE, y)
                         yield ('-y', y)
                     for y in range(j1, j2):
-                        yield ('+*', y)
+                        yield (B_LINE_CHANGE, y)
                         yield ('+y', y)
+        # print(self.diffmap)
 
     def _fancy_replace(self, a, alo, ahi, b, blo, bhi):
-        best_ratio, cutoff = self.cut-0.01, self.cut
+        best_ratio, cutoff = self.ratio-0.01, self.ratio
         diff = SequenceMatcher(None)
         eqi, eqj = None, None
         for j in range(blo, bhi):
@@ -93,26 +112,27 @@ class Differ:
         yield from self._fancy_helper(a, alo, best_i, b, blo, best_j)
         aelt, belt = a[best_i], b[best_j]
         if eqi is None:
-            atags = btags = ""
             diff.set_seqs(aelt, belt)
             deca, decb = 0, 0
             for tag, ai1, ai2, bj1, bj2 in diff.get_opcodes():
                 la, lb = ai2 - ai1, bj2 - bj1
                 if tag == 'delete':
                     deca += 1
-                    yield ('--', best_i, ai1, la)
+                    yield (A_SYMBOL_DEL, best_i, ai1, la)
                 elif tag == 'insert':
                     decb += 1
-                    yield ('++', best_j, bj1, lb)
+                    yield (B_SYMBOL_ADD, best_j, bj1, lb)
                 elif tag == 'replace':
                     deca += 1
                     decb += 1
-                    yield ('--', best_i, ai1, la)
-                    yield ('++', best_j, bj1, lb)
-            yield ('-*', best_i)
-            yield ('+*', best_j)
-            yield ('-y', best_i) if deca == 0 else ('-r', best_i)
-            yield ('+y', best_j) if decb == 0 else ('+g', best_j)
+                    yield (A_SYMBOL_DEL, best_i, ai1, la)
+                    yield (B_SYMBOL_ADD, best_j, bj1, lb)
+            yield (A_LINE_CHANGE, best_i)
+            yield (B_LINE_CHANGE, best_j)
+            yield (A_DECOR_YELLOW, best_i) if deca == 0 else \
+                  (A_DECOR_RED, best_i)
+            yield (B_DECOR_YELLOW, best_j) if decb == 0 else \
+                  (B_DECOR_GREEN, best_j)
         yield from self._fancy_helper(a, best_i+1, ahi, b, best_j+1, bhi)
 
     def _fancy_helper(self, a, alo, ahi, b, blo, bhi):
@@ -121,22 +141,22 @@ class Differ:
                 yield from self._fancy_replace(a, alo, ahi, b, blo, bhi)
             else:
                 if ahi-alo > 0:
-                    yield ('+^', blo, ahi-alo)
+                    yield (B_GAP, blo, ahi-alo)
                 for y in range(alo, ahi):
-                    yield ('-', y)
+                    yield (A_LINE_DEL, y)
         elif blo < bhi:
             if bhi-blo > 0:
-                yield ('-^', ahi, bhi-blo)
+                yield (A_GAP, ahi, bhi-blo)
             for y in range(blo, bhi):
-                    yield ('+', y)
+                yield (B_LINE_ADD, y)
 
     def _plain_replace(self, a, alo, ahi, b, blo, bhi):
         da, db = ahi-alo, bhi-blo
         if da > db:
-            yield ('+^', bhi, da-db)
+            yield (B_GAP, bhi, da-db)
         elif db > da:
-            yield ('-^', ahi, db-da)
+            yield (A_GAP, ahi, db-da)
         for y in range(blo, bhi):
-            yield ('+', y)
+            yield (B_LINE_ADD, y)
         for y in range(alo, ahi):
-            yield ('-', y)
+            yield (A_LINE_DEL, y)

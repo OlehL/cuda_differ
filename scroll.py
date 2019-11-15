@@ -3,8 +3,8 @@ import cudatext_cmd as ct_cmd
 
 
 def show_caret(e):
-
     e.cmd(ct_cmd.cCommand_GotoScreenTop)
+
 
 class ScrollSplittedTab:
     keep_caret_visible = False

@@ -8,28 +8,26 @@ class FileHistory:
     section = 'recents'
 
     def __init__(self):
-
         self.filename = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'cuda_differ_history.ini')
         self.max_size = appx.get_opt('ui_max_history_files', 25)
-        #print('Differ history max_size:', self.max_size)
+        # print('Differ history max_size:', self.max_size)
 
     def load(self):
-
         self.items = []
         for i in range(self.max_size):
             fn = ct.ini_read(self.filename, self.section, str(i), '')
-            if not fn: break
+            if not fn:
+                break
             self.items.append(fn)
 
     def save(self):
-
         ct.ini_proc(ct.INI_DELETE_SECTION, self.filename, self.section, '')
         for (i, item) in enumerate(self.items):
             ct.ini_write(self.filename, self.section, str(i), item)
 
     def add(self, item):
-
-        if not item: return
+        if not item:
+            return
         if item in self.items:
             self.items.remove(item)
         self.items.insert(0, item)
@@ -38,7 +36,6 @@ class FileHistory:
             self.items = self.items[:self.max_size]
 
     def clear(self):
-    
         self.items = []
 
 
@@ -78,7 +75,7 @@ class DifferDialog:
 
             # if 2 files opened in group-1, suggest these 2 files
             hh = ct.ed_handles()
-            if len(hh)==2:
+            if len(hh) == 2:
                 name1 = ct.Editor(hh[0]).get_filename()
                 name2 = ct.Editor(hh[1]).get_filename()
                 if name1 and name2:
@@ -99,7 +96,6 @@ class DifferDialog:
             return (self.f1, self.f2)
 
     def dialog(self, items):
-
         self.h = ct.dlg_proc(0, ct.DLG_CREATE)
         ct.dlg_proc(self.h, ct.DLG_PROP_SET,
                     prop={'cap': 'Differ: Choose files...',
@@ -226,15 +222,15 @@ class DifferDialog:
                           'a_l': None,
                           'a_r': ('cancel', '['),
                           'sp_a': 5,
-                          'ex0': True, # press button by Enter
+                          'ex0': True,  # press button by Enter
                           'tab_order': 2,
                           'on_change': self.press_ok
                           }
                     )
-        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_1'))
-        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f1_combo'))
-        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_2'))
-        #print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f2_combo'))
+        # print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_1'))
+        # print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f1_combo'))
+        # print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='browse_2'))
+        # print(ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f2_combo'))
 
         return self.h
 
