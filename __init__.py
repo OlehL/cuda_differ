@@ -348,7 +348,7 @@ class Command:
 
     def jump(self):
         if not self.diff.diffmap:
-            return ct.msg_status("No find difference")
+            return ct.msg_status("No differences found")
         if len(self.diff.diffmap) == 1:
             ct.msg_status("Found only one difference")
         hndl_primary = ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY)

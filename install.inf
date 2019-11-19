@@ -28,12 +28,12 @@ method=jump_prev
 
 [item8]
 section=commands
-caption=Differ\Copy current difference to right
+caption=Differ\Copy current difference to the right
 method=copy_right
 
 [item9]
 section=commands
-caption=Differ\Copy current difference to left
+caption=Differ\Copy current difference to the left
 method=copy_left
 
 [item10]
