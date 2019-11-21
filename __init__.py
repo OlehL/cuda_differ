@@ -156,6 +156,11 @@ class Command:
             if not e:
                 ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_ONE)
 
+    def on_state(self, ed_self, state):
+        if state == ct.APPSTATE_THEME_SYNTAX:
+            self.get_config()
+            self.refresh()
+
     def on_scroll(self, ed_self):
         self.scroll.on_scroll(ed_self)
 
