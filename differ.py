@@ -1,4 +1,4 @@
-from difflib import SequenceMatcher, _count_leading
+from difflib import SequenceMatcher
 
 
 A_LINE_DEL = '-'
@@ -15,6 +15,16 @@ B_DECOR_YELLOW = '+y'
 B_DECOR_GREEN = '+g'
 
 
+def _count_leading(line, ch):
+    """
+    Return number of `ch` characters at the start of `line`.
+    """
+    i, n = 0, len(line)
+    while i < n and line[i] == ch:
+        i += 1
+    return i
+    
+    
 class Differ:
     """
     compare function return tuples for paint text
