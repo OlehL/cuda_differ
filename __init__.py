@@ -1,4 +1,4 @@
-﻿import os
+import os
 import json
 
 import cudatext as ct
@@ -125,27 +125,30 @@ class Command:
         if files is None:
             return
 
-        for f in files:
-            for h in ct.ed_handles():
-                e = ct.Editor(h)
-                file_name = e.get_filename()
-                if file_name == f:
-                    if e.get_prop(ct.PROP_MODIFIED):
-                        text = 'First you must save file:\n' + \
-                                file_name + \
-                               '\nYES: save and continue\n' + \
-                               "NO: don't save (changes will be lost)"
-                        mb = ct.msg_box(text,
-                                        ct.MB_YESNOCANCEL+ct.MB_ICONQUESTION)
-                        if mb == ct.ID_YES:
-                            e.save(file_name)
-                        elif mb == ct.ID_NO:
-                            e.set_prop(ct.PROP_MODIFIED, False)
-                        else:
-                            return
-                    e.focus()
-                    e.cmd(ct_cmd.cmd_FileClose)
-                    break
+        for h in ct.ed_handles():
+            e = ct.Editor(h)
+            file_name = e.get_filename()
+            if file_name in files:
+                e.focus()
+                ct.msg_box('One of 2 chosen files is already opened. Please close it first.\nDiffer plugin will re-open both files in a single UI tab.', 
+                    ct.MB_OK+ct.MB_ICONWARNING)
+                return
+                '''
+                if e.get_prop(ct.PROP_MODIFIED):
+                    text = 'First you must save file:\n' + \
+                            file_name + \
+                           '\nYES: save and continue\n' + \
+                           "NO: don't save (changes will be lost)"
+                    mb = ct.msg_box(text,
+                                    ct.MB_YESNOCANCEL+ct.MB_ICONQUESTION)
+                    if mb == ct.ID_YES:
+                        e.save(file_name)
+                    elif mb == ct.ID_NO:
+                        e.set_prop(ct.PROP_MODIFIED, False)
+                    else:
+                        return
+                e.cmd(ct_cmd.cmd_FileClose)
+                '''
 
         ct.file_open(files, options='/nohistory')
         self.refresh()
