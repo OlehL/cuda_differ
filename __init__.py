@@ -1,5 +1,6 @@
-﻿import os
+import os
 import json
+from time import sleep
 
 import cudatext as ct
 import cudatext_cmd as ct_cmd
@@ -158,6 +159,10 @@ class Command:
                             return
                     e.focus()
                     e.cmd(ct_cmd.cmd_FileClose)
+                    
+                    ct.app_idle(True) # better close file
+                    sleep(0.3)
+                    ct.app_idle(True) # better close file
                     break
 
         ct.file_open(files, options='/nohistory')
