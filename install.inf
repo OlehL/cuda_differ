@@ -13,8 +13,23 @@ method=choose_files
 
 [item2]
 section=commands
+caption=Differ\Compare with...
+method=compare_with
+
+[item3]
+section=commands
 caption=Differ\Refresh
 method=refresh
+
+[item4]
+section=commands
+caption=Differ\Focus to opposit panel
+method=set_focus_to_opposit_panel
+
+[item5]
+section=commands
+caption=Differ\Select current difference
+method=select_current
 
 [item6]
 section=commands

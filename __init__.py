@@ -64,8 +64,14 @@ OPTS_META = [
      'frm': 'int',
      'chp': 'config',
      },
-    {'opt': 'differ.keep_caret_visible',
-     'cmt': 'On sync-scrolling, keep carets in both editors visible on current screen area',
+    {'opt': 'differ.enable_sync_caret',
+     'cmt': 'Keep carets in both editors visible on current screen area',
+     'def':  False,
+     'frm': 'bool',
+     'chp': 'config',
+     },
+    {'opt': 'differ.enable_auto_refresh',
+     'cmt': 'Auto diff refresh after changes',
      'def':  False,
      'frm': 'bool',
      'chp': 'config',
@@ -95,17 +101,16 @@ class Command:
         self.cfg = self.get_config()
         self.diff = df.Differ()
         self.diff_dlg = DifferDialog()
-        self.curdiff = 0
 
     def change_config(self):
         import cuda_options_editor as op_ed
         op_ed_dlg = None
         subset = 'differ.'  # Key to isolate settings for op_ed plugin
-        how = dict(hide_lex_fil = True,  # If option has not setting for lexer/cur.file
-                   stor_json = JSONFILE)
+        how = dict(hide_lex_fil=True,  # If option has not setting for lexer/cur.file
+                   stor_json=JSONFILE)
         try:  # New op_ed allows to skip meta-file
-            op_ed_dlg   = op_ed.OptEdD(
-                path_keys_info = OPTS_META,     subset = subset, how = how)
+            op_ed_dlg = op_ed.OptEdD(
+                path_keys_info=OPTS_META, subset=subset, how=how)
         except:
             # Old op_ed requires to use meta-file
             if not os.path.exists(METAJSONFILE) \
@@ -113,18 +118,58 @@ class Command:
                 # Create/update meta-info file
                 open(METAJSONFILE, 'w').write(json.dumps(OPTS_META, indent=4))
             op_ed_dlg = op_ed.OptEdD(
-                path_keys_info = METAJSONFILE, subset = subset, how = how)
+                path_keys_info=METAJSONFILE, subset=subset, how=how)
         if op_ed_dlg.show('Differ Options'):  # Dialog caption
             # Need to use updated options
             self.config()
             self.scroll.toggle(self.cfg['sync_scroll'])
-            self.scroll.keep_caret_visible = self.cfg['keep_caret_visible']
+            # self.scroll.enable_sync_caret = self.cfg['enable_sync_caret']
 
     def choose_files(self):
         files = self.diff_dlg.run()
         if files is None:
             return
+        self.set_files(*files)
 
+        """for f in files:
+            for h in ct.ed_handles():
+                e = ct.Editor(h)
+                file_name = e.get_filename()
+                if file_name == f:
+                    if e.get_prop(ct.PROP_MODIFIED):
+                        text = 'First you must save file:\n' + \
+                                file_name + \
+                               '\nYES: save and continue\n' + \
+                               "NO: don't save (changes will be lost)"
+                        mb = ct.msg_box(text,
+                                        ct.MB_YESNOCANCEL+ct.MB_ICONQUESTION)
+                        if mb == ct.ID_YES:
+                            e.save(file_name)
+                        elif mb == ct.ID_NO:
+                            e.set_prop(ct.PROP_MODIFIED, False)
+                        else:
+                            return
+                    e.focus()
+                    e.cmd(ct_cmd.cmd_FileClose)
+                    break
+
+        ct.file_open(files, options='/nohistory')
+
+        # if file was in group-2, and now group-2 is empty, set "one group" mode
+        if ct.app_proc(ct.PROC_GET_GROUPING, '') in [ct.GROUPS_2VERT, ct.GROUPS_2HORZ]:
+            e = ct.ed_group(1)  # Editor obj in group-2
+            if not e:
+                ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_ONE)
+
+        self.refresh()"""
+
+    def compare_with(self):
+        fn = ct.dlg_file(True, '!', '', '')
+        if not fn:
+            return
+        self.set_files(ct.ed.get_filename(), fn)
+
+    def set_files(self, *files):
         for f in files:
             for h in ct.ed_handles():
                 e = ct.Editor(h)
@@ -148,13 +193,14 @@ class Command:
                     break
 
         ct.file_open(files, options='/nohistory')
-        self.refresh()
 
         # if file was in group-2, and now group-2 is empty, set "one group" mode
         if ct.app_proc(ct.PROC_GET_GROUPING, '') in [ct.GROUPS_2VERT, ct.GROUPS_2HORZ]:
-            e = ct.ed_group(1) # Editor obj in group-2
+            e = ct.ed_group(1)  # Editor obj in group-2
             if not e:
                 ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_ONE)
+
+        self.refresh()
 
     def on_state(self, ed_self, state):
         if state == ct.APPSTATE_THEME_SYNTAX:
@@ -164,12 +210,19 @@ class Command:
     def on_scroll(self, ed_self):
         self.scroll.on_scroll(ed_self)
 
+    def on_caret(self, ed_self):
+        if self.cfg.get('enable_sync_caret', False):
+            self.sync_carret()
+
+    def on_change_slow(self, ed_self):
+        if self.cfg.get('enable_auto_refresh', False):
+            self.refresh()
+
     def on_tab_change(self, ed_self):
         self.config()
         self.scroll.toggle(self.cfg.get('sync_scroll'))
 
     def refresh(self):
-        self.curdiff = 0
         if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
             return
 
@@ -227,8 +280,10 @@ class Command:
             elif diff_id == df.B_LINE_CHANGE:
                 self.set_bookmark2(b_ed, y, NKIND_CHANGED)
             elif diff_id == df.A_GAP:
+                # print('a_ed', y, d[2])
                 self.set_gap(a_ed, y, d[2])
             elif diff_id == df.B_GAP:
+                # print('b_ed', y, d[2])
                 self.set_gap(b_ed, y, d[2])
             elif diff_id == df.A_SYMBOL_DEL:
                 self.set_attr(a_ed, d[2], y, d[3], self.cfg.get('color_deleted'))
@@ -254,7 +309,6 @@ class Command:
 
     def set_gap(self, e, row, n=1):
         "set gap line after row line"
-        # print('gap:', row, n)
         _, h = e.get_prop(ct.PROP_CELL_SIZE)
         h_size = h * n
         e.gap(ct.GAP_ADD, row-1, 0,
@@ -311,7 +365,7 @@ class Command:
             data = ct.app_proc(ct.PROC_THEME_SYNTAX_DICT_GET, '')
             th = {}
             th['color_changed'] = data['LightBG2']['color_back']
-            th['color_added'] = data['LightBG3']['color_back'] 
+            th['color_added'] = data['LightBG3']['color_back']
             th['color_deleted'] = data['LightBG1']['color_back']
             return th
 
@@ -335,11 +389,13 @@ class Command:
                 get_opt('compare_with_details', True),
             'ratio':
                 get_opt('ratio_percents',  75)/100,
-            'keep_caret_visible':
-                get_opt('keep_caret_visible', False),
+            'enable_sync_caret':
+                get_opt('enable_sync_caret', False),
+            'enable_auto_refresh':
+                get_opt('enable_auto_refresh', False),
         }
 
-        self.scroll.keep_caret_visible = config['keep_caret_visible']
+        # self.scroll.enable_sync_caret = config['enable_sync_caret']
 
         new_nkind(NKIND_DELETED, config.get('color_deleted'))
         new_nkind(NKIND_ADDED, config.get('color_added'))
@@ -351,91 +407,87 @@ class Command:
         file_history.clear()
         file_history.save()
 
-    def jump(self):
-        if not self.diff.diffmap:
-            return ct.msg_status("No differences found")
-        if len(self.diff.diffmap) == 1:
-            ct.msg_status("Found only one difference")
-        hndl_primary = ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY)
-        hndl_secondary = ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY)
-        a_ed = ct.Editor(hndl_primary)
-        b_ed = ct.Editor(hndl_secondary)
-
-        current = self.diff.diffmap[self.curdiff]
-        a_ed.set_caret(0, current[0], 0, current[1], ct.CARET_SET_ONE)
-        b_ed.set_caret(0, current[2], 0, current[3], ct.CARET_SET_ONE)
-
-    def jump_next(self):
-        if not self.diff.diffmap:
-            return
-        self.curdiff += 1
-        if self.curdiff >= len(self.diff.diffmap):
-            self.curdiff = 0
-        self.jump()
-
-    def jump_prev(self):
-        if not self.diff.diffmap:
-            return
-        self.curdiff -= 1
-        if self.curdiff < 0:
-            self.curdiff = len(self.diff.diffmap)-1
-        self.jump()
-
-    def copy(self, copy_to_tight=True):
-        if not self.diff.diffmap:
-            return
+    @staticmethod
+    def focused():
         hndl_self = ct.ed.get_prop(ct.PROP_HANDLE_SELF)
         hndl_primary = ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY)
         hndl_secondary = ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY)
+        eds = (ct.Editor(hndl_primary), ct.Editor(hndl_secondary))
         if hndl_self == hndl_primary:
-            current_primary = True
+            return 0, eds
         else:
-            current_primary = False
+            return 1, eds
 
-        x, y, x2, y2 = ct.ed.get_carets()[0]
-        for cd in self.diff.diffmap:
-            if current_primary:
-                p0 = cd[0]
-                p1 = cd[1]
-            else:
-                p0 = cd[2]
-                p1 = cd[3]
-            if y in range(p0, p1):
-                a0, a1, b0, b1 = cd
-                self.curdiff = self.diff.diffmap.index(cd)
-                self.diff.diffmap.pop(self.curdiff)
-                print(cd)
+    def jump(self, next=True):
+        if not self.diff.diffmap:
+            self.refresh()
+        if len(self.diff.diffmap) == 1:
+            return ct.msg_status("Found only one difference")
+        fc, eds = self.focused()
+
+        i = None
+        if fc == 0:
+            p = 0 if next else 1
+        else:
+            p = 2 if next else 3
+        y = eds[fc].get_carets()[0][1]
+        for n, df in enumerate(self.diff.diffmap):
+            if y < df[p]:
+                i = n if next else n - 1
                 break
-        else:
+
+        if i is None:
+            i = 0 if next else len(self.diff.diffmap) - 1
+        elif i >= len(self.diff.diffmap):
+            i = 0
+        elif i < 0:
+            i = len(self.diff.diffmap) - 1
+        to = self.diff.diffmap[i]
+        eds[0].set_caret(0, to[0], 0, to[1], ct.CARET_SET_ONE)
+        eds[1].set_caret(0, to[2], 0, to[3], ct.CARET_SET_ONE)
+
+    def jump_next(self):
+        self.jump()
+
+    def jump_prev(self):
+        self.jump(False)
+
+    def select_current(self):
+        if not self.diff.diffmap:
+            self.refresh()
+        esc = self.cfg.get('enable_sync_caret', False)
+        fc, eds = self.focused()
+        p = fc * 2
+        y = eds[fc].get_carets()[0][1]
+        for df in self.diff.diffmap:
+            if df[p] <= y < df[p+1]:
+                self.cfg['enable_sync_caret'] = False
+                eds[0].set_caret(0, df[0], 0, df[1])
+                eds[1].set_caret(0, df[2], 0, df[3])
+                print(df)
+                self.cfg['enable_sync_caret'] = esc
+                return df
+
+    def copy(self, to_right=True):
+        fc, eds = self.focused()
+        current = self.select_current()
+        if not current:
             return
-
-        a_ed = ct.Editor(hndl_primary)
-        b_ed = ct.Editor(hndl_secondary)
-
-        if copy_to_tight:
-            text = a_ed.get_text_substr(0, a0, 0, a1)
         else:
-            text = b_ed.get_text_substr(0, b0, 0, b1)
-        a_ed.gap(ct.GAP_DELETE, a0-1, a1)
-        b_ed.gap(ct.GAP_DELETE, b0-1, b1)
-        a_ed.attr(ct.MARKERS_DELETE_BY_TAG, tag=DIFF_TAG)
-        b_ed.attr(ct.MARKERS_DELETE_BY_TAG, tag=DIFF_TAG)
-        a_ed.delete(0, a0, 0, a1)
-        b_ed.delete(0, b0, 0, b1)
-        if text:
-            a_ed.insert(0, a0, text)
-            b_ed.insert(0, b0, text)
-
-        if copy_to_tight:
-            delta = (b1 - b0) - (a1 - a0)
-            for n in range(self.curdiff, len(self.diff.diffmap)):
-                self.diff.diffmap[n][2] -= delta
-                self.diff.diffmap[n][3] -= delta
+            a0, a1, b0, b1 = current
+        if to_right:
+            text = eds[0].get_text_substr(0, a0, 0, a1)
+            eds[1].delete(0, b0, 0, b1)
+            if text:
+                eds[1].insert(0, b0, text)
         else:
-            delta = (a1 - a0) - (b1 - b0)
-            for n in range(self.curdiff, len(self.diff.diffmap)):
-                self.diff.diffmap[n][0] -= delta
-                self.diff.diffmap[n][1] -= delta
+            text = eds[1].get_text_substr(0, b0, 0, b1)
+            eds[0].delete(0, a0, 0, a1)
+            if text:
+                eds[0].insert(0, a0, text)
+        eds[0].set_caret(0, a0)
+        eds[1].set_caret(0, b0)
+        self.refresh()
 
     def copy_right(self):
         self.copy(True)
@@ -443,17 +495,27 @@ class Command:
     def copy_left(self):
         self.copy(False)
 
-    # def focus_to_opposit_panel(self):
-    #     if ct.ed.get_prop(ct.PROP_SPLIT)[0] == '-':
-    #         print(1)
-    #         return
-    #     hndl_self = ct.ed.get_prop(ct.PROP_HANDLE_SELF)
-    #     hndl_primary = ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY)
-    #     hndl_secondary = ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY)
-    #     print(hndl_self, hndl_primary, hndl_secondary)
-    #     if hndl_self == hndl_primary:
-    #         e = ct.Editor(hndl_secondary)
-    #         e.focus()
-    #     else:
-    #         e = ct.Editor(hndl_primary)
-    #         e.focus()
+    def set_focus_to_opposit_panel(self):
+        ct.ed.cmd(ct_cmd.cmd_ToggleFocusSplitEditors)
+
+    def sync_carret(self):
+        if not self.diff.diffmap:
+            return
+        fc, eds = self.focused()
+        op = 0 if fc else 1
+        x, y = eds[fc].get_carets()[0][:2]
+
+        esc = self.cfg.get('enable_sync_caret', False)
+        p = fc * 2
+        for df in self.diff.diffmap:
+            if df[p] <= y < df[p+1]:
+                self.cfg['enable_sync_caret'] = False
+                eds[op].set_caret(0, df[op*2])
+                self.cfg['enable_sync_caret'] = esc
+                return
+        for df in self.diff.diffmap:
+            if y < df[p]:
+                self.cfg['enable_sync_caret'] = False
+                eds[op].set_caret(x, df[op*2]-df[p]+y)
+                self.cfg['enable_sync_caret'] = esc
+                return

@@ -1,4 +1,4 @@
-from difflib import SequenceMatcher, _count_leading
+from difflib import SequenceMatcher
 
 
 A_LINE_DEL = '-'
@@ -35,6 +35,7 @@ class Differ:
         self.withdetail = True
         self.ratio = 0.75
         self.set_seqs(a, b)
+        self.diffmap = []
 
     def set_seqs(self, a, b):
         self.a = a
@@ -43,13 +44,10 @@ class Differ:
     def compare(self):
         self.diffmap = []
         diff = SequenceMatcher(None, self.a, self.b)
-
         for tag, i1, i2, j1, j2 in diff.get_opcodes():
             delta = i1-i2-j1+j2
-
             if tag != 'equal':
                 self.diffmap.append([i1, i2, j1, j2])
-
             if tag == 'delete':
                 yield (B_GAP, j2, abs(delta))
                 for y in range(i1, i2):
@@ -71,7 +69,6 @@ class Differ:
                     for y in range(i1, i2):
                         yield (A_LINE_CHANGE, y)
                         yield (A_DECOR_YELLOW, y)
-
                     for y in range(j1, j2):
                         yield (B_LINE_CHANGE, y)
                         yield (B_DECOR_YELLOW, y)
