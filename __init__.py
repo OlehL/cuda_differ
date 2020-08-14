@@ -131,38 +131,6 @@ class Command:
             return
         self.set_files(*files)
 
-        """for f in files:
-            for h in ct.ed_handles():
-                e = ct.Editor(h)
-                file_name = e.get_filename()
-                if file_name == f:
-                    if e.get_prop(ct.PROP_MODIFIED):
-                        text = 'First you must save file:\n' + \
-                                file_name + \
-                               '\nYES: save and continue\n' + \
-                               "NO: don't save (changes will be lost)"
-                        mb = ct.msg_box(text,
-                                        ct.MB_YESNOCANCEL+ct.MB_ICONQUESTION)
-                        if mb == ct.ID_YES:
-                            e.save(file_name)
-                        elif mb == ct.ID_NO:
-                            e.set_prop(ct.PROP_MODIFIED, False)
-                        else:
-                            return
-                    e.focus()
-                    e.cmd(ct_cmd.cmd_FileClose)
-                    break
-
-        ct.file_open(files, options='/nohistory')
-
-        # if file was in group-2, and now group-2 is empty, set "one group" mode
-        if ct.app_proc(ct.PROC_GET_GROUPING, '') in [ct.GROUPS_2VERT, ct.GROUPS_2HORZ]:
-            e = ct.ed_group(1)  # Editor obj in group-2
-            if not e:
-                ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_ONE)
-
-        self.refresh()"""
-
     def compare_with(self):
         fn = ct.dlg_file(True, '!', '', '')
         if not fn:
@@ -394,8 +362,6 @@ class Command:
             'enable_auto_refresh':
                 get_opt('enable_auto_refresh', False),
         }
-
-        # self.scroll.enable_sync_caret = config['enable_sync_caret']
 
         new_nkind(NKIND_DELETED, config.get('color_deleted'))
         new_nkind(NKIND_ADDED, config.get('color_added'))
