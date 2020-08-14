@@ -13,7 +13,7 @@ method=choose_files
 
 [item2]
 section=commands
-caption=Differ\Compare with...
+caption=Differ\Compare current file with...
 method=compare_with
 
 [item3]
@@ -23,7 +23,7 @@ method=refresh
 
 [item4]
 section=commands
-caption=Differ\Focus to opposit panel
+caption=Differ\Focus the opposite file
 method=set_focus_to_opposit_panel
 
 [item5]
@@ -51,13 +51,13 @@ section=commands
 caption=Differ\Copy current difference to the left
 method=copy_left
 
-[item10]
+[item40]
 section=commands
 caption=Differ\Config...
 method=change_config
 menu=o
 
-[item11]
+[item45]
 section=commands
 caption=Differ\Clear recents history
 method=clear_history
