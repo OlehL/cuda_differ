@@ -31,22 +31,22 @@ section=commands
 caption=Differ\Select current difference
 method=select_current
 
-[item6]
+[item10]
 section=commands
 caption=Differ\Jump to next difference
 method=jump_next
 
-[item7]
+[item11]
 section=commands
 caption=Differ\Jump to previous difference
 method=jump_prev
 
-[item8]
+[item15]
 section=commands
 caption=Differ\Copy current difference to the right
 method=copy_right
 
-[item9]
+[item16]
 section=commands
 caption=Differ\Copy current difference to the left
 method=copy_left
