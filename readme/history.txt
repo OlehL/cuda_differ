@@ -1,3 +1,15 @@
+
+2020.08.14
++ add: command "Compare with..." to compare currently opened file with custom file
++ add: command "Select current difference" to select current diff-block under caret
++ add: command "Focus the opposite file" (works like standard CudaText command)
++ add: option "enable_auto_refresh"
+* change: command "Jump to next difference"
+* change: command "Jump to previous difference"
+* change: command "Copy current difference to the right"
+* change: command "Copy current difference to the left"
+* change: option "keep_caret_visible" replaced with "enable_sync_caret"
+
 2019.11.15
 * changed: commands "Jump to next diffecence", "Jump to previous difference"
 + add: command "Copy current difference to left"
