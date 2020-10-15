@@ -159,10 +159,10 @@ class Command:
                             return
                     e.focus()
                     e.cmd(ct_cmd.cmd_FileClose)
-                    
-                    ct.app_idle(True) # better close file
+
+                    ct.app_idle(True)  # better close file
                     sleep(0.3)
-                    ct.app_idle(True) # better close file
+                    ct.app_idle(True)  # better close file
                     break
 
         ct.file_open(files, options='/nohistory')
@@ -378,8 +378,8 @@ class Command:
         file_history.clear()
         file_history.save()
 
-    @staticmethod
-    def focused():
+    @property
+    def focused(self):
         hndl_self = ct.ed.get_prop(ct.PROP_HANDLE_SELF)
         hndl_primary = ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY)
         hndl_secondary = ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY)
@@ -389,26 +389,26 @@ class Command:
         else:
             return 1, eds
 
-    def jump(self, next=True):
+    def jump(self, to_next=True):
         if not self.diff.diffmap:
             self.refresh()
         if len(self.diff.diffmap) == 1:
             return ct.msg_status("Found only one difference")
-        fc, eds = self.focused()
+        fc, eds = self.focused
 
         i = None
         if fc == 0:
-            p = 0 if next else 1
+            p = 0 if to_next else 1
         else:
-            p = 2 if next else 3
+            p = 2 if to_next else 3
         y = eds[fc].get_carets()[0][1]
         for n, df in enumerate(self.diff.diffmap):
             if y < df[p]:
-                i = n if next else n - 1
+                i = n if to_next else n - 1
                 break
 
         if i is None:
-            i = 0 if next else len(self.diff.diffmap) - 1
+            i = 0 if to_next else len(self.diff.diffmap) - 1
         elif i >= len(self.diff.diffmap):
             i = 0
         elif i < 0:
@@ -423,25 +423,31 @@ class Command:
     def jump_prev(self):
         self.jump(False)
 
-    def select_current(self):
+    @property
+    def get_current_change(self):
         if not self.diff.diffmap:
             self.refresh()
-        esc = self.cfg.get('enable_sync_caret', False)
-        fc, eds = self.focused()
+        fc, eds = self.focused
         p = fc * 2
         y = eds[fc].get_carets()[0][1]
         for df in self.diff.diffmap:
             if df[p] <= y < df[p+1]:
-                self.cfg['enable_sync_caret'] = False
-                eds[0].set_caret(0, df[0], 0, df[1])
-                eds[1].set_caret(0, df[2], 0, df[3])
-                print(df)
-                self.cfg['enable_sync_caret'] = esc
                 return df
 
+    def select_current(self):
+        cur_change = self.get_current_change
+        if not cur_change:
+            return
+        esc = self.cfg.get('enable_sync_caret', False)
+        fc, eds = self.focused
+        self.cfg['enable_sync_caret'] = False
+        eds[0].set_caret(0, cur_change[0], 0, cur_change[1])
+        eds[1].set_caret(0, cur_change[2], 0, cur_change[3])
+        self.cfg['enable_sync_caret'] = esc
+
     def copy(self, to_right=True):
-        fc, eds = self.focused()
-        current = self.select_current()
+        fc, eds = self.focused
+        current = self.get_current_change
         if not current:
             return
         else:
@@ -466,13 +472,53 @@ class Command:
     def copy_left(self):
         self.copy(False)
 
+    def copy_line(self, to_right=True):
+        fc, eds = self.focused
+        current = self.get_current_change
+
+        def get_lines(ed: ct.Editor):
+            carets = ed.get_carets()
+            if len(carets) != 1:
+                return []
+            caret = carets[0]
+            _, y1, _, y2 = caret
+            if y2 == -1:
+                return ed.get_text_line(y1) + '\n'
+            else:
+                return ''.join([ed.get_text_line(y)+'\n' for y in range(y1, y2)])
+
+        if not current:
+            return
+        else:
+            a0, a1, b0, b1 = current
+        if to_right:
+            if fc == 1:
+                return
+            text = get_lines(eds[0])
+            print(text)
+            if text:
+                eds[1].insert(0, b0, text)
+        else:
+            if fc == 0:
+                return
+            text = get_lines(eds[1])
+            if text:
+                eds[0].insert(0, a0, text)
+        self.refresh()
+
+    def copy_line_right(self):
+        self.copy_line(True)
+
+    def copy_line_left(self):
+        self.copy_line(False)
+
     def set_focus_to_opposit_panel(self):
         ct.ed.cmd(ct_cmd.cmd_ToggleFocusSplitEditors)
 
     def sync_carret(self):
         if not self.diff.diffmap:
             return
-        fc, eds = self.focused()
+        fc, eds = self.focused
         op = 0 if fc else 1
         x, y = eds[fc].get_carets()[0][:2]
 
