@@ -1,4 +1,7 @@
 
+2020.10.20
+- fix: could not "jump to next diff" with only single diff
+
 2020.08.14
 + add: command "Compare with..." to compare currently opened file with custom file
 + add: command "Select current difference" to select current diff-block under caret
