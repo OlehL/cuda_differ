@@ -1,5 +1,6 @@
 
 2020.10.20
++ add: don't allow command "Compare current file with" for untitled tab / modified tab
 - fix: could not "jump to next diff" with only single diff
 
 2020.08.14
