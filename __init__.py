@@ -133,10 +133,14 @@ class Command:
         self.set_files(*files)
 
     def compare_with(self):
+        fn0 = ct.ed.get_filename()
+        if not fn0:
+            ct.msg_status('Cannot compare untitled document')
+            return
         fn = ct.dlg_file(True, '!', '', '')
         if not fn:
             return
-        self.set_files(ct.ed.get_filename(), fn)
+        self.set_files(fn0, fn)
 
     def set_files(self, *files):
         for f in files:
