@@ -392,8 +392,8 @@ class Command:
     def jump(self, next=True):
         if not self.diff.diffmap:
             self.refresh()
-        if len(self.diff.diffmap) == 1:
-            return ct.msg_status("Found only one difference")
+        if len(self.diff.diffmap) == 0:
+            return ct.msg_status("No differences were found")
         fc, eds = self.focused()
 
         i = None
