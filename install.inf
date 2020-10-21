@@ -24,7 +24,7 @@ method=refresh
 [item4]
 section=commands
 caption=Differ\Focus the opposite file
-method=set_focus_to_opposit_panel
+method=set_focus_to_opposite_panel
 
 [item5]
 section=commands

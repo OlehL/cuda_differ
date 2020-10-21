@@ -1,6 +1,7 @@
 import os
 import json
 from time import sleep
+import typing as tp
 
 import cudatext as ct
 import cudatext_cmd as ct_cmd
@@ -19,6 +20,7 @@ GAP_WIDTH = 5000
 DECOR_CHAR = '■'
 DEFAULT_SYNC_SCROLL = '1'
 
+PLG_NAME = 'Differ'
 METAJSONFILE = os.path.dirname(__file__) + os.sep + 'differ_opts.json'
 JSONFILE = 'cuda_differ.json'  # To store in settings/cuda_differ.json
 JSONPATH = ct.app_path(ct.APP_DIR_SETTINGS) + os.sep + JSONFILE
@@ -80,14 +82,13 @@ OPTS_META = [
 ]
 
 
-def get_opt(key, dval=''):
-    return ctx.get_opt('differ.' + key, dval, user_json=JSONFILE) \
+def get_opt(key, def_val: tp.Any = ''):
+    return ctx.get_opt('differ.' + key, def_val, user_json=JSONFILE) \
            if ctx.version(0) >= '0.6.8' \
-           else ctx.get_opt('differ.' + key, dval)
+           else ctx.get_opt('differ.' + key, def_val)
 
 
 def msg(s, level=0):
-    PLG_NAME = 'Differ'
     if level == 0:
         print(PLG_NAME + ':', s)
     elif level == 1:
@@ -192,7 +193,7 @@ class Command:
 
     def on_caret(self, ed_self):
         if self.cfg.get('enable_sync_caret', False):
-            self.sync_carret()
+            self.sync_caret()
 
     def on_change_slow(self, ed_self):
         if self.cfg.get('enable_auto_refresh', False):
@@ -260,10 +261,8 @@ class Command:
             elif diff_id == df.B_LINE_CHANGE:
                 self.set_bookmark2(b_ed, y, NKIND_CHANGED)
             elif diff_id == df.A_GAP:
-                # print('a_ed', y, d[2])
                 self.set_gap(a_ed, y, d[2])
             elif diff_id == df.B_GAP:
-                # print('b_ed', y, d[2])
                 self.set_gap(b_ed, y, d[2])
             elif diff_id == df.A_SYMBOL_DEL:
                 self.set_attr(a_ed, d[2], y, d[3], self.cfg.get('color_deleted'))
@@ -325,7 +324,8 @@ class Command:
             return
         self.cfg = self.get_config()
 
-    def get_config(self):
+    @staticmethod
+    def get_config():
 
         def get_color(key, default_color):
             s = get_opt(key, '')
@@ -519,10 +519,11 @@ class Command:
     def copy_line_left(self):
         self.copy_line(False)
 
-    def set_focus_to_opposit_panel(self):
+    @staticmethod
+    def set_focus_to_opposite_panel():
         ct.ed.cmd(ct_cmd.cmd_ToggleFocusSplitEditors)
 
-    def sync_carret(self):
+    def sync_caret(self):
         if not self.diff.diffmap:
             return
         fc, eds = self.focused
