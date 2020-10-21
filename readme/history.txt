@@ -1,6 +1,7 @@
 
 2020.10.20
-- fix: could not "jump to next diff" with only single diff
++ add: don't allow command "Compare current file with" for untitled tab / modified tab
+- fix: command "Jump to next diff" failed with only single diff
 
 2020.08.14
 + add: command "Compare with..." to compare currently opened file with custom file
