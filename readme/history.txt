@@ -2,6 +2,8 @@
 2020.10.20
 + add: don't allow command "Compare current file with" for untitled tab / modified tab
 - fix: command "Jump to next diff" failed with only single diff
++ add: command "Copy current line to the right" get line under cursor from left file and copy to the right file
++ add: command "Copy current line to the right" get line under cursor from right file and copy to the left file
 
 2020.08.14
 + add: command "Compare with..." to compare currently opened file with custom file
