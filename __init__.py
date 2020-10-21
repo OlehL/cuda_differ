@@ -133,10 +133,17 @@ class Command:
         self.set_files(*files)
 
     def compare_with(self):
+        fn0 = ct.ed.get_filename()
+        if not fn0:
+            ct.msg_status('Cannot compare untitled document')
+            return
+        if ct.ed.get_prop(ct.PROP_MODIFIED):
+            ct.msg_status('Cannot compare modified document, save it first')
+            return
         fn = ct.dlg_file(True, '!', '', '')
         if not fn:
             return
-        self.set_files(ct.ed.get_filename(), fn)
+        self.set_files(fn0, fn)
 
     def set_files(self, *files):
         for f in files:
@@ -392,8 +399,8 @@ class Command:
     def jump(self, to_next=True):
         if not self.diff.diffmap:
             self.refresh()
-        if len(self.diff.diffmap) == 1:
-            return ct.msg_status("Found only one difference")
+        if len(self.diff.diffmap) == 0:
+            return ct.msg_status("No differences were found")
         fc, eds = self.focused
 
         i = None
