@@ -1,4 +1,7 @@
 
+2021.06.08
++ add: adapt for new cuda_prefs plugin (CudaText 1.133.x)
+
 2020.10.20
 + add: don't allow command "Compare current file with" for untitled tab / modified tab
 - fix: command "Jump to next diff" failed with only single diff
