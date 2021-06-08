@@ -105,7 +105,10 @@ class Command:
         self.diff_dlg = DifferDialog()
 
     def change_config(self):
-        import cuda_options_editor as op_ed
+        try:
+            import cuda_options_editor as op_ed
+        except ImportError:
+            import cuda_prefs as op_ed
         op_ed_dlg = None
         subset = 'differ.'  # Key to isolate settings for op_ed plugin
         how = dict(hide_lex_fil=True,  # If option has not setting for lexer/cur.file
