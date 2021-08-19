@@ -135,6 +135,9 @@ class Command:
         if files is None:
             return
         self.set_files(*files)
+        
+    def on_cli(self, fn1, fn2):
+        self.set_files(fn1, fn2)
 
     def compare_with(self):
         fn0 = ct.ed.get_filename()
