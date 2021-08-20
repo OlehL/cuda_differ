@@ -11,6 +11,8 @@ from . import differ as df
 from .scroll import ScrollSplittedTab
 from .ui import DifferDialog, file_history
 
+from cudax_lib import get_translation
+_ = get_translation(__file__)  # I18N
 
 DIFF_TAG = 148
 NKIND_DELETED = 24
@@ -26,55 +28,55 @@ JSONFILE = 'cuda_differ.json'  # To store in settings/cuda_differ.json
 JSONPATH = ct.app_path(ct.APP_DIR_SETTINGS) + os.sep + JSONFILE
 OPTS_META = [
     {'opt': 'differ.changed_color',
-     'cmt': 'Color of changed lines',
+     'cmt': _('Color of changed lines'),
      'def': '',
      'frm': '#rgb-e',
      'chp': 'colors',
      },
     {'opt': 'differ.added_color',
-     'cmt': 'Color of added lines',
+     'cmt': _('Color of added lines'),
      'def': '',
      'frm': '#rgb-e',
      'chp': 'colors',
      },
     {'opt': 'differ.deleted_color',
-     'cmt': 'Color of deleted lines',
+     'cmt': _('Color of deleted lines'),
      'def': '',
      'frm': '#rgb-e',
      'chp': 'colors',
      },
     {'opt': 'differ.gap_color',
-     'cmt': 'Color of inter-line gap background',
+     'cmt': _('Color of inter-line gap background'),
      'def': '',
      'frm': '#rgb-e',
      'chp': 'colors',
      },
     {'opt': 'differ.sync_scroll',
-     'cmt': 'Use synchronized scrolling (vertical/horizontal) in two compared files',
+     'cmt': _('Use synchronized scrolling (vertical/horizontal) in two compared files'),
      'def': True,
      'frm': 'bool',
      'chp': 'config',
      },
     {'opt': 'differ.compare_with_details',
-     'cmt': 'Perform detailed comparision',
+     'cmt': _('Perform detailed comparision'),
      'def': True,
      'frm': 'bool',
      'chp': 'config',
      },
     {'opt': 'differ.ratio_percents',
-     'cmt': 'Measure of the sequences’ similarity, in percents',
+     'cmt': _('Measure of the sequences’ similarity, in percents'),
      'def':  75,
      'frm': 'int',
      'chp': 'config',
      },
     {'opt': 'differ.enable_sync_caret',
-     'cmt': 'Keep carets in both editors visible on current screen area',
+     'cmt': _('Keep carets in both editors visible on current screen area'),
      'def':  False,
      'frm': 'bool',
      'chp': 'config',
      },
     {'opt': 'differ.enable_auto_refresh',
-     'cmt': 'Auto diff refresh after changes',
+     'cmt': _('Auto diff refresh after changes'),
      'def':  False,
      'frm': 'bool',
      'chp': 'config',
@@ -92,9 +94,9 @@ def msg(s, level=0):
     if level == 0:
         print(PLG_NAME + ':', s)
     elif level == 1:
-        print(PLG_NAME + ' WARNING:', s)
+        print(PLG_NAME + _(' WARNING:'), s)
     elif level == 2:
-        print(PLG_NAME + ' ERROR:', s)
+        print(PLG_NAME + _(' ERROR:'), s)
 
 
 class Command:
@@ -124,7 +126,7 @@ class Command:
                 open(METAJSONFILE, 'w').write(json.dumps(OPTS_META, indent=4))
             op_ed_dlg = op_ed.OptEdD(
                 path_keys_info=METAJSONFILE, subset=subset, how=how)
-        if op_ed_dlg.show('Differ Options'):  # Dialog caption
+        if op_ed_dlg.show(_('Differ Options')):  # Dialog caption
             # Need to use updated options
             self.config()
             self.scroll.toggle(self.cfg['sync_scroll'])
@@ -135,17 +137,17 @@ class Command:
         if files is None:
             return
         self.set_files(*files)
-        
+
     def on_cli(self, fn1, fn2):
         self.set_files(fn1, fn2)
 
     def compare_with(self):
         fn0 = ct.ed.get_filename()
         if not fn0:
-            ct.msg_status('Cannot compare untitled document')
+            ct.msg_status(_('Cannot compare untitled document'))
             return
         if ct.ed.get_prop(ct.PROP_MODIFIED):
-            ct.msg_status('Cannot compare modified document, save it first')
+            ct.msg_status(_('Cannot compare modified document, save it first'))
             return
         fn = ct.dlg_file(True, '!', '', '')
         if not fn:
@@ -159,10 +161,10 @@ class Command:
                 file_name = e.get_filename()
                 if file_name == f:
                     if e.get_prop(ct.PROP_MODIFIED):
-                        text = 'First you must save file:\n' + \
-                                file_name + \
-                               '\nYES: save and continue\n' + \
-                               "NO: don't save (changes will be lost)"
+                        text = _('First you must save file:\n'
+                                 '{}'
+                                 '\nYES: save and continue\n'
+                                 "NO: don't save (changes will be lost)").format(file_name)
                         mb = ct.msg_box(text,
                                         ct.MB_YESNOCANCEL+ct.MB_ICONQUESTION)
                         if mb == ct.ID_YES:
@@ -224,17 +226,17 @@ class Command:
         b_text_all = b_ed.get_text_all()
 
         if a_text_all == '':
-            t = 'The file:\n{}\nis empty.'.format(a_file)
+            t = _('The file:\n{}\nis empty.').format(a_file)
             ct.msg_box(t, ct.MB_OK)
             return
 
         if b_text_all == '':
-            t = 'The file:\n{}\nis empty.'.format(b_file)
+            t = _('The file:\n{}\nis empty.').format(b_file)
             ct.msg_box(t, ct.MB_OK)
             return
 
         if a_text_all == b_text_all:
-            t = 'The files are identical:\n{0}\n{1}'.format(a_file, b_file)
+            t = _('The files are identical:\n{0}\n{1}').format(a_file, b_file)
             ct.msg_box(t, ct.MB_OK)
             return
 
@@ -406,7 +408,7 @@ class Command:
         if not self.diff.diffmap:
             self.refresh()
         if len(self.diff.diffmap) == 0:
-            return ct.msg_status("No differences were found")
+            return ct.msg_status(_("No differences were found"))
         fc, eds = self.focused
 
         i = None
