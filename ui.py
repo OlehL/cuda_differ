@@ -2,6 +2,9 @@
 import cudatext as ct
 import cudax_lib as appx
 
+from cudax_lib import get_translation
+_ = get_translation(__file__)  # I18N
+
 
 class FileHistory:
     items = []
@@ -98,7 +101,7 @@ class DifferDialog:
     def dialog(self, items):
         self.h = ct.dlg_proc(0, ct.DLG_CREATE)
         ct.dlg_proc(self.h, ct.DLG_PROP_SET,
-                    prop={'cap': 'Differ: Choose files...',
+                    prop={'cap': _('Differ: Choose files...'),
                           'x': center_ct()[0]-275,
                           'y': center_ct()[1]-90,
                           'w': 550,
@@ -113,7 +116,7 @@ class DifferDialog:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=g1,
                     prop={
                           'name': 'g1',
-                          'cap': 'First file:',
+                          'cap': _('First file:'),
                           'h': 60,
                           'a_l': ('', '['),
                           'a_r': ('', ']'),
@@ -126,7 +129,7 @@ class DifferDialog:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
                     prop={
                           'name': 'browse_1',
-                          'cap': 'Browse...',
+                          'cap': _('Browse...'),
                           'w': 80,
                           'a_l': None,
                           'a_t': ('', '['),
@@ -156,7 +159,7 @@ class DifferDialog:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=g1,
                     prop={
                           'name': 'g2',
-                          'cap': 'Second file:',
+                          'cap': _('Second file:'),
                           'h': 60,
                           'a_l': ('', '['),
                           'a_t': ('g1', ']'),
@@ -169,7 +172,7 @@ class DifferDialog:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
                     prop={
                           'name': 'browse_2',
-                          'cap': 'Browse...',
+                          'cap': _('Browse...'),
                           'w': 80,
                           'a_l': None,
                           'a_t': ('', '['),
@@ -199,7 +202,7 @@ class DifferDialog:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
                     prop={
                           'name': 'cancel',
-                          'cap': 'Cancel',
+                          'cap': _('Cancel'),
                           'w': 80,
                           'a_t': None,
                           'a_b': ('', ']'),
@@ -215,7 +218,7 @@ class DifferDialog:
         ct.dlg_proc(self.h, ct.DLG_CTL_PROP_SET, index=n,
                     prop={
                           'name': 'ok',
-                          'cap': 'OK',
+                          'cap': _('OK'),
                           'w': 80,
                           'a_t': None,
                           'a_b': ('', ']'),
@@ -260,16 +263,16 @@ class DifferDialog:
         f1_prop = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f1_combo')
         f1 = f1_prop.get('val')
         if not os.path.isfile(f1):
-            set_cap('g1', 'First file: (Please set correct path)')
+            set_cap('g1', _('First file: (Please set correct path)'))
         else:
-            set_cap('g1', 'First file:')
+            set_cap('g1', _('First file:'))
 
         f2_prop = ct.dlg_proc(self.h, ct.DLG_CTL_PROP_GET, name='f2_combo')
         f2 = f2_prop.get('val')
         if not os.path.isfile(f2):
-            set_cap('g2', 'Second file: (Please set correct path)')
+            set_cap('g2', _('Second file: (Please set correct path)'))
         else:
-            set_cap('g2', 'Second file:')
+            set_cap('g2', _('Second file:'))
 
         if os.path.isfile(f1) and os.path.isfile(f2):
             self.ready = True
