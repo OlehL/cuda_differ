@@ -552,3 +552,7 @@ class Command:
                 eds[op].set_caret(x, df[op*2]-df[p]+y)
                 self.cfg['enable_sync_caret'] = esc
                 return
+
+    def on_start(self, ed_self):
+        n = ct.menu_proc('tab', ct.MENU_ADD, caption='-')
+        n = ct.menu_proc('tab', ct.MENU_ADD, command='module=cuda_differ;cmd=compare_with;', caption=_('Compare current file with...'))
