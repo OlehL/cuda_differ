@@ -1,3 +1,6 @@
+2022.03.39
++ add: menu item "Compare current file with tab" to context menu of tab (patch by @ildarkhasanshin)
+
 2022.03.29
 + add: menu item "Compare current file with..." to context menu of tab (patch by @ildarkhasanshin)
 

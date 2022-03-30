@@ -76,3 +76,7 @@ menu=o
 [item46]
 section=events
 events=on_start
+
+[item47]
+section=events
+events=on_tab_change

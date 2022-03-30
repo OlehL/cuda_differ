@@ -554,5 +554,33 @@ class Command:
                 return
 
     def on_start(self, ed_self):
-        n = ct.menu_proc('tab', ct.MENU_ADD, caption='-')
-        n = ct.menu_proc('tab', ct.MENU_ADD, command='module=cuda_differ;cmd=compare_with;', caption=_('Compare current file with...'))
+        ct.menu_proc('tab', ct.MENU_ADD, caption='-')
+        ct.menu_proc('tab', ct.MENU_ADD, command='module=cuda_differ;cmd=compare_with;', caption=_('Compare current file with...'))
+
+    def compare_with_tab(self, path):
+        fn0 = ct.ed.get_filename()
+        fn = path
+        if not fn0 or not fn:
+            return
+        self.set_files(fn0, fn)
+
+    def on_tab_change(self, ed_self):
+        ind_ = compare_with_tab_id = 0
+        for ind, it in enumerate(ct.menu_proc('tab', ct.MENU_ENUM)):
+            if 'compare_with_tab' in it['tag']:
+                ind_ = ind
+                compare_with_tab_id = it['id']
+        if ind_ == 0:
+            compare_with_tab_id = ct.menu_proc('tab', ct.MENU_ADD, tag='compare_with_tab', caption=_('Compare current file with tab'))
+
+        handles = ct.ed_handles()
+        paths = []
+        for h in handles:
+            edit = ct.Editor(h)
+            path = edit.get_filename()
+            if path.find('/Untitled') == -1 and path != ct.ed.get_filename():
+                paths.append(path)
+
+        ct.menu_proc(compare_with_tab_id, ct.MENU_CLEAR)
+        for path in paths:
+            ct.menu_proc(compare_with_tab_id, ct.MENU_ADD, command='module=cuda_differ;cmd=compare_with_tab;info='+path+';', caption=path)
