@@ -577,7 +577,7 @@ class Command:
             for h in handles:
                 edit = ct.Editor(h)
                 path = edit.get_filename()
-                if path.find('/Untitled') == -1 and path != ct.ed.get_filename() and path != '':
+                if path != ct.ed.get_filename() and path != '':
                     paths.append(path)
 
             if len(paths) > 0:
