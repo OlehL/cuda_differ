@@ -210,6 +210,10 @@ class Command:
     def on_tab_change(self, ed_self):
         self.config()
         self.scroll.toggle(self.cfg.get('sync_scroll'))
+        self.compare_with_tab()
+
+    def on_open(self, ed_self):
+        self.compare_with_();
 
     def refresh(self):
         if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
@@ -553,34 +557,63 @@ class Command:
                 self.cfg['enable_sync_caret'] = esc
                 return
 
-    def on_start(self, ed_self):
-        ct.menu_proc('tab', ct.MENU_ADD, caption='-')
-        ct.menu_proc('tab', ct.MENU_ADD, command='module=cuda_differ;cmd=compare_with;', caption=_('Compare current file with...'))
+    def compare_with_(self):
+        compare_with_id = False
+        where_ = 'tab'
+        tag_ = 'compare_with'
+        for ind, it in enumerate(ct.menu_proc(where_, ct.MENU_ENUM)):
+            if tag_ in it['tag']:
+                compare_with_id = it['id']
+        if compare_with_id == False:
+            ct.menu_proc(where_, ct.MENU_ADD, caption='-')
+            ct.menu_proc(where_, ct.MENU_ADD, tag=tag_, command='module=cuda_differ;cmd=compare_with;', caption=_('Compare current file with...'))
 
-    def compare_with_tab(self, path):
+    def compare_with_tab(self):
+        handles = ct.ed_handles()
+        if len(handles) > 1:
+            compare_with_tab_id = self.compare_with_tab_add_menu()
+
+            paths = []
+            for h in handles:
+                edit = ct.Editor(h)
+                path = edit.get_filename()
+                if path.find('/Untitled') == -1 and path != ct.ed.get_filename() and path != '':
+                    paths.append(path)
+
+            if len(paths) > 0:
+                ct.menu_proc(compare_with_tab_id, ct.MENU_CLEAR)
+                for path in paths:
+                    ct.menu_proc(compare_with_tab_id, ct.MENU_ADD, command='module=cuda_differ;cmd=compare_with_tab_files;info='+path+';', caption=path)
+            else:
+                self.compare_with_tab_remove_menu()
+        else:
+            self.compare_with_tab_remove_menu()
+
+    def compare_with_tab_get_index(self):
+        compare_with_tab_id = False
+        where_ = 'tab'
+        tag_ = 'compare_with_tab'
+        for ind, it in enumerate(ct.menu_proc(where_, ct.MENU_ENUM)):
+            if tag_ in it['tag']:
+                compare_with_tab_id = it['id']
+        return compare_with_tab_id
+
+    def compare_with_tab_add_menu(self):
+        compare_with_tab_id = self.compare_with_tab_get_index()
+        where_ = 'tab'
+        tag_ = 'compare_with_tab'
+        if compare_with_tab_id is False:
+            return ct.menu_proc(where_, ct.MENU_ADD, tag=tag_, caption=_('Compare current file with tab'))
+        return compare_with_tab_id
+
+    def compare_with_tab_remove_menu(self):
+        compare_with_tab_id = self.compare_with_tab_get_index()
+        if compare_with_tab_id is not False:
+            ct.menu_proc(compare_with_tab_id, ct.MENU_REMOVE)
+
+    def compare_with_tab_files(self, path):
         fn0 = ct.ed.get_filename()
         fn = path
         if not fn0 or not fn:
             return
         self.set_files(fn0, fn)
-
-    def on_tab_change(self, ed_self):
-        ind_ = compare_with_tab_id = 0
-        for ind, it in enumerate(ct.menu_proc('tab', ct.MENU_ENUM)):
-            if 'compare_with_tab' in it['tag']:
-                ind_ = ind
-                compare_with_tab_id = it['id']
-        if ind_ == 0:
-            compare_with_tab_id = ct.menu_proc('tab', ct.MENU_ADD, tag='compare_with_tab', caption=_('Compare current file with tab'))
-
-        handles = ct.ed_handles()
-        paths = []
-        for h in handles:
-            edit = ct.Editor(h)
-            path = edit.get_filename()
-            if path.find('/Untitled') == -1 and path != ct.ed.get_filename():
-                paths.append(path)
-
-        ct.menu_proc(compare_with_tab_id, ct.MENU_CLEAR)
-        for path in paths:
-            ct.menu_proc(compare_with_tab_id, ct.MENU_ADD, command='module=cuda_differ;cmd=compare_with_tab;info='+path+';', caption=path)

@@ -75,7 +75,7 @@ menu=o
 
 [item46]
 section=events
-events=on_start
+events=on_open
 
 [item47]
 section=events
