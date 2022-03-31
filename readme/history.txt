@@ -1,3 +1,8 @@
+2022.03.39
++ add: menu item "Compare current file with tab" to context menu of tab (patch by @ildarkhasanshin)
+
+2022.03.29
++ add: menu item "Compare current file with..." to context menu of tab (patch by @ildarkhasanshin)
 
 2021.08.20
 + add: i18n support (patch by Markus)
@@ -57,7 +62,7 @@
 2019.04.17
 * require CudaText 1.78.7
 + add: changed sync-scroll to smooth (per pixel) scroll
-+ add: if 2+ groups are opened in CudaText, suggest in Choose Files dialog files from groups 1 and 2 
++ add: if 2+ groups are opened in CudaText, suggest in Choose Files dialog files from groups 1 and 2
 
 2019.02.07
 - minor fixes
