@@ -625,9 +625,15 @@ class Command:
         if compare_with_tab_id is not False:
             ct.menu_proc(compare_with_tab_id, ct.MENU_REMOVE)
 
-    def compare_with_tab_files(self, path):
+    def compare_with_tab_files(self, fn):
         fn0 = ct.ed.get_filename()
-        fn = path
         if not fn0 or not fn:
             return
-        self.set_files(fn0, fn)
+        callback = 'module=cuda_differ;cmd=compare_from_timer;info='+fn0+'~~'+fn+';'
+        #print('callback:', callback)
+        ct.timer_proc(ct.TIMER_START_ONE, callback, 100)
+    
+    def compare_from_timer(self, tag='', info=''):
+        #print('compare_from_timer:', info)
+        fn0, fn1 = info.split('~~', maxsplit=1)
+        self.set_files(fn0, fn1)
