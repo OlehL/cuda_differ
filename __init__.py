@@ -582,7 +582,7 @@ class Command:
     def compare_with_tab(self):
         handles = ct.ed_handles()
         if len(handles) > 1:
-            compare_with_tab_id = self.compare_with_tab_add_menu()
+            tabmenu_id = self.tabmenu_add_menu()
 
             paths = []
             for h in handles:
@@ -592,40 +592,40 @@ class Command:
                     paths.append(path)
 
             if len(paths) > 0:
-                ct.menu_proc(compare_with_tab_id, ct.MENU_CLEAR)
+                ct.menu_proc(tabmenu_id, ct.MENU_CLEAR)
                 for path in paths:
-                    ct.menu_proc(compare_with_tab_id, ct.MENU_ADD, 
-                        command='module=cuda_differ;cmd=compare_with_tab_files;info='+path.replace('\\', '\\\\')+';', 
+                    ct.menu_proc(tabmenu_id, ct.MENU_ADD, 
+                        command='module=cuda_differ;cmd=tabmenu_files;info='+path.replace('\\', '\\\\')+';', 
                         caption=collapse_filename(path)
                         )
             else:
-                self.compare_with_tab_remove_menu()
+                self.tabmenu_remove_menu()
         else:
-            self.compare_with_tab_remove_menu()
+            self.tabmenu_remove_menu()
 
-    def compare_with_tab_get_index(self):
-        compare_with_tab_id = False
+    def tabmenu_get_index(self):
+        tabmenu_id = False
         where_ = 'tab'
         tag_ = 'compare_with_tab'
         for ind, it in enumerate(ct.menu_proc(where_, ct.MENU_ENUM)):
             if tag_ in it['tag']:
-                compare_with_tab_id = it['id']
-        return compare_with_tab_id
+                tabmenu_id = it['id']
+        return tabmenu_id
 
-    def compare_with_tab_add_menu(self):
-        compare_with_tab_id = self.compare_with_tab_get_index()
+    def tabmenu_add_menu(self):
+        tabmenu_id = self.tabmenu_get_index()
         where_ = 'tab'
         tag_ = 'compare_with_tab'
-        if compare_with_tab_id is False:
+        if tabmenu_id is False:
             return ct.menu_proc(where_, ct.MENU_ADD, tag=tag_, caption=_('Compare current file with tab'))
-        return compare_with_tab_id
+        return tabmenu_id
 
-    def compare_with_tab_remove_menu(self):
-        compare_with_tab_id = self.compare_with_tab_get_index()
-        if compare_with_tab_id is not False:
-            ct.menu_proc(compare_with_tab_id, ct.MENU_REMOVE)
+    def tabmenu_remove_menu(self):
+        tabmenu_id = self.tabmenu_get_index()
+        if tabmenu_id is not False:
+            ct.menu_proc(tabmenu_id, ct.MENU_REMOVE)
 
-    def compare_with_tab_files(self, fn):
+    def tabmenu_files(self, fn):
         fn0 = ct.ed.get_filename()
         if not fn0 or not fn:
             return
