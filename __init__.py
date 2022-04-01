@@ -84,6 +84,14 @@ OPTS_META = [
 ]
 
 
+_homedir = os.path.expanduser('~')
+
+def collapse_filename(fn):
+    if (fn+'/').startswith(_homedir+'/'):
+        fn = fn.replace(_homedir, '~', 1)
+    return fn
+
+
 def get_opt(key, def_val: tp.Any = ''):
     return ctx.get_opt('differ.' + key, def_val, user_json=JSONFILE) \
            if ctx.version(0) >= '0.6.8' \
@@ -566,7 +574,10 @@ class Command:
                 compare_with_id = it['id']
         if compare_with_id == False:
             ct.menu_proc(where_, ct.MENU_ADD, caption='-')
-            ct.menu_proc(where_, ct.MENU_ADD, tag=tag_, command='module=cuda_differ;cmd=compare_with;', caption=_('Compare current file with...'))
+            ct.menu_proc(where_, ct.MENU_ADD, tag=tag_, 
+                command='module=cuda_differ;cmd=compare_with;', 
+                caption=_('Compare current file with...')
+                )
 
     def compare_with_tab(self):
         handles = ct.ed_handles()
@@ -583,7 +594,10 @@ class Command:
             if len(paths) > 0:
                 ct.menu_proc(compare_with_tab_id, ct.MENU_CLEAR)
                 for path in paths:
-                    ct.menu_proc(compare_with_tab_id, ct.MENU_ADD, command='module=cuda_differ;cmd=compare_with_tab_files;info='+path.replace('\\', '\\\\')+';', caption=path)
+                    ct.menu_proc(compare_with_tab_id, ct.MENU_ADD, 
+                        command='module=cuda_differ;cmd=compare_with_tab_files;info='+path.replace('\\', '\\\\')+';', 
+                        caption=collapse_filename(path)
+                        )
             else:
                 self.compare_with_tab_remove_menu()
         else:
