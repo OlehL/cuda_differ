@@ -583,7 +583,7 @@ class Command:
             if len(paths) > 0:
                 ct.menu_proc(compare_with_tab_id, ct.MENU_CLEAR)
                 for path in paths:
-                    ct.menu_proc(compare_with_tab_id, ct.MENU_ADD, command='module=cuda_differ;cmd=compare_with_tab_files;info='+path+';', caption=path)
+                    ct.menu_proc(compare_with_tab_id, ct.MENU_ADD, command='module=cuda_differ;cmd=compare_with_tab_files;info='+path.replace('\\', '\\\\')+';', caption=path)
             else:
                 self.compare_with_tab_remove_menu()
         else:
