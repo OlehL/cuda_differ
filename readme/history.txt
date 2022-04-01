@@ -1,8 +1,6 @@
-2022.03.39
-+ add: menu item "Compare current file with tab" to context menu of tab (patch by @ildarkhasanshin)
-
-2022.03.29
-+ add: menu item "Compare current file with..." to context menu of tab (patch by @ildarkhasanshin)
+2022.04.01
++ add: menu item "Compare current file with tab" added to context menu of tab-header (patch by @ildarkhasanshin)
++ add: menu item "Compare current file with..." added to context menu of tab-header (patch by @ildarkhasanshin)
 
 2021.08.20
 + add: i18n support (patch by Markus)
