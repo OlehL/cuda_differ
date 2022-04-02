@@ -599,10 +599,9 @@ class Command:
                 )
 
         handles = ct.ed_handles()
-        many_tabs = len(handles) > 1
         cur_fn = ct.ed.get_filename()
         paths = []
-        if many_tabs:
+        if len(handles) > 1:
             for h in handles:
                 e = ct.Editor(h)
                 if self.tabmenu_editor_ok(e, cur_fn):
