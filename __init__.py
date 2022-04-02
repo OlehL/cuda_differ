@@ -570,13 +570,16 @@ class Command:
                 self.cfg['enable_sync_caret'] = esc
                 return
 
-    def tabmenu_editor_ok(self, e):
+    def tabmenu_editor_ok(self, e, disabled_fn):
         if not e.get_prop(ct.PROP_EDITORS_LINKED):
             return False
         if e.get_prop(ct.PROP_KIND) != 'text':
             return False
-        if not e.get_filename():
+        fn = e.get_filename()
+        if not fn:
             return False
+        if bool(disabled_fn) and (fn==disabled_fn):
+            return False 
         return True
 
     def tabmenu_init(self, is_tab_change):
@@ -602,10 +605,8 @@ class Command:
         if many_tabs:
             for h in handles:
                 e = ct.Editor(h)
-                if not self.tabmenu_editor_ok(e):
-                    continue
-                path = e.get_filename()
-                if path != cur_fn and path != '':
+                if self.tabmenu_editor_ok(e, cur_fn):
+                    path = e.get_filename()
                     paths.append(path)
 
             if paths:
@@ -616,7 +617,7 @@ class Command:
                         caption=collapse_filename(path)
                         )
 
-        cur_ok = self.tabmenu_editor_ok(ct.ed) 
+        cur_ok = self.tabmenu_editor_ok(ct.ed, '') 
         ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=cur_ok and bool(paths))
         ct.menu_proc(self.menuid_withfile, ct.MENU_SET_ENABLED, command=cur_ok)
 
