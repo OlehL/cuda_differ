@@ -569,7 +569,7 @@ class Command:
         compare_with_id = False
         where_ = 'tab'
         tag_ = 'compare_with'
-        for ind, it in enumerate(ct.menu_proc(where_, ct.MENU_ENUM)):
+        for it in ct.menu_proc(where_, ct.MENU_ENUM):
             if tag_ in it['tag']:
                 compare_with_id = it['id']
         if compare_with_id == False:
@@ -607,7 +607,7 @@ class Command:
         tabmenu_id = False
         where_ = 'tab'
         tag_ = 'compare_with_tab'
-        for ind, it in enumerate(ct.menu_proc(where_, ct.MENU_ENUM)):
+        for it in ct.menu_proc(where_, ct.MENU_ENUM):
             if tag_ in it['tag']:
                 tabmenu_id = it['id']
         return tabmenu_id
