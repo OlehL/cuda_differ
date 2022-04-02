@@ -620,7 +620,7 @@ class Command:
         if not fn0 or not fn:
             return
         callback = 'module=cuda_differ;cmd=tabmenu_files_timer;info='+fn0+'~~'+fn+';'
-        print('tabmenu_files:', fn0, fn)
+        #print('tabmenu_files:', fn0, fn)
         ct.timer_proc(ct.TIMER_START_ONE, callback, 100)
 
     def tabmenu_files_timer(self, tag='', info=''):
