@@ -588,9 +588,9 @@ class Command:
 
         handles = ct.ed_handles()
         many_tabs = len(handles) > 1
+        cur_fn = ct.ed.get_filename()
         paths = []
         if many_tabs:
-            cur_fn = ct.ed.get_filename()
             for h in handles:
                 e = ct.Editor(h)
                 path = e.get_filename()
@@ -605,7 +605,8 @@ class Command:
                         caption=collapse_filename(path)
                         )
 
-        ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=bool(paths))
+        ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=bool(cur_fn) and bool(paths))
+        ct.menu_proc(self.menuid_withfile, ct.MENU_SET_ENABLED, command=bool(cur_fn))
 
     def tabmenu_files(self, fn):
         fn0 = ct.ed.get_filename()
