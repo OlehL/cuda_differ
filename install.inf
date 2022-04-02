@@ -73,10 +73,7 @@ caption=Differ\Clear recents history
 method=clear_history
 menu=o
 
-[item46]
+[item100]
 section=events
-events=on_open
-
-[item47]
-section=events
-events=on_tab_change
+events=on_open,on_tab_change~
+;on_tab_change is 'lazy'
