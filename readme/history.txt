@@ -1,7 +1,5 @@
 2022.04.02
-+ add: menu item "Compare current file with tab" added to context menu of tab-header (patch by @ildarkhasanshin)
-+ add: menu item "Compare current file with..." added to context menu of tab-header (patch by @ildarkhasanshin)
-- fix: reworked patches from Ildar by Alexey T.
++ add: menu items "Compare with tab" and "Compare with..." added to context menu of tab-header (patches by @ildarkhasanshin and Alexey T.)
 
 2021.08.20
 + add: i18n support (patch by Markus)
