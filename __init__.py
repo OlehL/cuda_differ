@@ -114,6 +114,10 @@ class Command:
         self.diff = df.Differ()
         self.diff_dlg = DifferDialog()
 
+        self.menuid_sep = None
+        self.menuid_withfile = None
+        self.menuid_withtab = None
+
     def change_config(self):
         try:
             import cuda_options_editor as op_ed
@@ -218,10 +222,11 @@ class Command:
     def on_tab_change(self, ed_self):
         self.config()
         self.scroll.toggle(self.cfg.get('sync_scroll'))
-        self.compare_with_tab()
+        self.tabmenu_init(True)
 
     def on_open(self, ed_self):
-        self.compare_with_();
+        #print('Differ on_open')
+        self.tabmenu_init(False)
 
     def refresh(self):
         if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
@@ -565,65 +570,42 @@ class Command:
                 self.cfg['enable_sync_caret'] = esc
                 return
 
-    def compare_with_(self):
-        compare_with_id = False
-        where_ = 'tab'
-        tag_ = 'compare_with'
-        for it in ct.menu_proc(where_, ct.MENU_ENUM):
-            if tag_ in it['tag']:
-                compare_with_id = it['id']
-        if compare_with_id == False:
-            ct.menu_proc(where_, ct.MENU_ADD, caption='-')
-            ct.menu_proc(where_, ct.MENU_ADD, tag=tag_, 
-                command='module=cuda_differ;cmd=compare_with;', 
-                caption=_('Compare current file with...')
+    def tabmenu_init(self, is_tab_change):
+        if is_tab_change and self.menuid_sep is None:
+            return
+
+        if self.menuid_sep is None:
+            self.menuid_sep = ct.menu_proc('tab', ct.MENU_ADD,
+                caption='-'
+                )
+            self.menuid_withfile = ct.menu_proc('tab', ct.MENU_ADD,
+                command='module=cuda_differ;cmd=compare_with;',
+                caption=_('Compare with...')
+                )
+            self.menuid_withtab = ct.menu_proc('tab', ct.MENU_ADD,
+                caption=_('Compare with tab')
                 )
 
-    def compare_with_tab(self):
         handles = ct.ed_handles()
-        if len(handles) > 1:
-            tabmenu_id = self.tabmenu_add_menu()
-
-            paths = []
+        many_tabs = len(handles) > 1
+        paths = []
+        if many_tabs:
+            cur_fn = ct.ed.get_filename()
             for h in handles:
-                edit = ct.Editor(h)
-                path = edit.get_filename()
-                if path != ct.ed.get_filename() and path != '':
+                e = ct.Editor(h)
+                path = e.get_filename()
+                if path != cur_fn and path != '':
                     paths.append(path)
 
-            if len(paths) > 0:
-                ct.menu_proc(tabmenu_id, ct.MENU_CLEAR)
+            if paths:
+                ct.menu_proc(self.menuid_withtab, ct.MENU_CLEAR)
                 for path in paths:
-                    ct.menu_proc(tabmenu_id, ct.MENU_ADD, 
-                        command='module=cuda_differ;cmd=tabmenu_files;info='+path.replace('\\', '\\\\')+';', 
+                    ct.menu_proc(self.menuid_withtab, ct.MENU_ADD,
+                        command='module=cuda_differ;cmd=tabmenu_files;info='+path.replace('\\', '\\\\')+';',
                         caption=collapse_filename(path)
                         )
-            else:
-                self.tabmenu_remove_menu()
-        else:
-            self.tabmenu_remove_menu()
 
-    def tabmenu_get_index(self):
-        tabmenu_id = False
-        where_ = 'tab'
-        tag_ = 'compare_with_tab'
-        for it in ct.menu_proc(where_, ct.MENU_ENUM):
-            if tag_ in it['tag']:
-                tabmenu_id = it['id']
-        return tabmenu_id
-
-    def tabmenu_add_menu(self):
-        tabmenu_id = self.tabmenu_get_index()
-        where_ = 'tab'
-        tag_ = 'compare_with_tab'
-        if tabmenu_id is False:
-            return ct.menu_proc(where_, ct.MENU_ADD, tag=tag_, caption=_('Compare current file with tab'))
-        return tabmenu_id
-
-    def tabmenu_remove_menu(self):
-        tabmenu_id = self.tabmenu_get_index()
-        if tabmenu_id is not False:
-            ct.menu_proc(tabmenu_id, ct.MENU_REMOVE)
+        ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=bool(paths))
 
     def tabmenu_files(self, fn):
         fn0 = ct.ed.get_filename()
@@ -632,7 +614,7 @@ class Command:
         callback = 'module=cuda_differ;cmd=compare_from_timer;info='+fn0+'~~'+fn+';'
         #print('callback:', callback)
         ct.timer_proc(ct.TIMER_START_ONE, callback, 100)
-    
+
     def compare_from_timer(self, tag='', info=''):
         #print('compare_from_timer:', info)
         fn0, fn1 = info.split('~~', maxsplit=1)
