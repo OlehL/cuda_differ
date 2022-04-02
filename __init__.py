@@ -570,6 +570,15 @@ class Command:
                 self.cfg['enable_sync_caret'] = esc
                 return
 
+    def tabmenu_editor_ok(self, e):
+        if not e.get_prop(ct.PROP_EDITORS_LINKED):
+            return False
+        if e.get_prop(ct.PROP_KIND) != 'text':
+            return False
+        if not e.get_filename():
+            return False
+        return True
+
     def tabmenu_init(self, is_tab_change):
         if is_tab_change and self.menuid_sep is None:
             return
@@ -593,6 +602,8 @@ class Command:
         if many_tabs:
             for h in handles:
                 e = ct.Editor(h)
+                if not self.tabmenu_editor_ok(e):
+                    continue
                 path = e.get_filename()
                 if path != cur_fn and path != '':
                     paths.append(path)
@@ -605,8 +616,9 @@ class Command:
                         caption=collapse_filename(path)
                         )
 
-        ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=bool(cur_fn) and bool(paths))
-        ct.menu_proc(self.menuid_withfile, ct.MENU_SET_ENABLED, command=bool(cur_fn))
+        cur_ok = self.tabmenu_editor_ok(ct.ed) 
+        ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=cur_ok and bool(paths))
+        ct.menu_proc(self.menuid_withfile, ct.MENU_SET_ENABLED, command=cur_ok)
 
     def tabmenu_chooser(self):
         callback = 'module=cuda_differ;cmd=tabmenu_chooser_timer;info=_;'
