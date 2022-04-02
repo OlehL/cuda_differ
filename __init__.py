@@ -579,7 +579,7 @@ class Command:
                 caption='-'
                 )
             self.menuid_withfile = ct.menu_proc('tab', ct.MENU_ADD,
-                command='module=cuda_differ;cmd=compare_with;',
+                command='module=cuda_differ;cmd=tabmenu_chooser;',
                 caption=_('Compare with...')
                 )
             self.menuid_withtab = ct.menu_proc('tab', ct.MENU_ADD,
@@ -601,22 +601,28 @@ class Command:
                 ct.menu_proc(self.menuid_withtab, ct.MENU_CLEAR)
                 for path in paths:
                     ct.menu_proc(self.menuid_withtab, ct.MENU_ADD,
-                        command='module=cuda_differ;cmd=tabmenu_files;info='+path.replace('\\', '\\\\')+';',
+                        command='module=cuda_differ;cmd=tabmenu_files;info='+path+';',
                         caption=collapse_filename(path)
                         )
 
         ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=bool(cur_fn) and bool(paths))
         ct.menu_proc(self.menuid_withfile, ct.MENU_SET_ENABLED, command=bool(cur_fn))
 
+    def tabmenu_chooser(self):
+        callback = 'module=cuda_differ;cmd=tabmenu_chooser_timer;info=_;'
+        ct.timer_proc(ct.TIMER_START_ONE, callback, 100)
+
+    def tabmenu_chooser_timer(self, tag='', info=''):
+        self.compare_with()
+
     def tabmenu_files(self, fn):
         fn0 = ct.ed.get_filename()
         if not fn0 or not fn:
             return
-        callback = 'module=cuda_differ;cmd=compare_from_timer;info='+fn0+'~~'+fn+';'
-        #print('callback:', callback)
+        callback = 'module=cuda_differ;cmd=tabmenu_files_timer;info='+fn0+'~~'+fn+';'
+        print('tabmenu_files:', fn0, fn)
         ct.timer_proc(ct.TIMER_START_ONE, callback, 100)
 
-    def compare_from_timer(self, tag='', info=''):
-        #print('compare_from_timer:', info)
+    def tabmenu_files_timer(self, tag='', info=''):
         fn0, fn1 = info.split('~~', maxsplit=1)
         self.set_files(fn0, fn1)
