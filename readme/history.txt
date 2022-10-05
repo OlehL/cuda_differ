@@ -1,6 +1,8 @@
 
 2022.10.05
 + add: command "Select all differences" (by @veksha)
+- fix: if different files are edited to be the same, "Refresh" command must clear all markers/bookmarks (by Alexey T.)
+- fix: if one of files don't have final EOL, force it before comparision (by Alexey T.)
 
 2022.04.02
 + add: menu items "Compare with tab" and "Compare with..." added to context menu of tab-header (patches by @ildarkhasanshin and Alexey T.)
