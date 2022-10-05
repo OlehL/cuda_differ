@@ -253,6 +253,8 @@ class Command:
             return
 
         if a_text_all == b_text_all:
+            self.clear(a_ed)
+            self.clear(b_ed)
             t = _('The files are identical:\n{0}\n{1}').format(a_file, b_file)
             ct.msg_box(t, ct.MB_OK)
             return
@@ -263,6 +265,11 @@ class Command:
         self.clear(a_ed)
         self.clear(b_ed)
         self.config()
+
+        if not a_text_all.endswith('\n'):
+            a_text_all += '\n'
+        if not b_text_all.endswith('\n'):
+            b_text_all += '\n'
 
         self.diff.set_seqs(a_text_all.splitlines(True),
                            b_text_all.splitlines(True))
