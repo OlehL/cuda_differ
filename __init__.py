@@ -243,12 +243,12 @@ class Command:
         b_text_all = b_ed.get_text_all()
 
         if a_text_all == '':
-            t = _('The file:\n{}\nis empty.').format(a_file)
+            t = _('The file:\n{}\nis empty.').format(collapse_filename(a_file))
             ct.msg_box(t, ct.MB_OK)
             return
 
         if b_text_all == '':
-            t = _('The file:\n{}\nis empty.').format(b_file)
+            t = _('The file:\n{}\nis empty.').format(collapse_filename(b_file))
             ct.msg_box(t, ct.MB_OK)
             return
 
@@ -261,7 +261,7 @@ class Command:
             self.clear(a_ed)
             self.clear(b_ed)
             self.diff.diffmap = []
-            t = _('The files are identical:\n{0}\n{1}').format(a_file, b_file)
+            t = _('The files are identical:\n{0}\n{1}').format(collapse_filename(a_file), collapse_filename(b_file))
             ct.msg_box(t, ct.MB_OK)
             return
 
