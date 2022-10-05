@@ -255,6 +255,7 @@ class Command:
         if a_text_all == b_text_all:
             self.clear(a_ed)
             self.clear(b_ed)
+            self.diff.diffmap = []
             t = _('The files are identical:\n{0}\n{1}').format(a_file, b_file)
             ct.msg_box(t, ct.MB_OK)
             return
