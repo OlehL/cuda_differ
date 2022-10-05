@@ -638,3 +638,15 @@ class Command:
     def tabmenu_files_timer(self, tag='', info=''):
         fn0, fn1 = info.split('~~', maxsplit=1)
         self.set_files(fn0, fn1)
+
+    def select_all_diff(self):
+        if not self.diff.diffmap:
+            self.refresh()
+        if len(self.diff.diffmap) == 0:
+            return ct.msg_status(_("No differences were found"))
+        fc, eds = self.focused
+        y1,y2 = (0,1) if fc == 0 else (2,3)
+
+        for n, df in enumerate(self.diff.diffmap):
+            id = ct.CARET_SET_ONE if n == 0 else ct.CARET_ADD
+            eds[fc].set_caret(0, df[y1], 0, df[y2], id=id)

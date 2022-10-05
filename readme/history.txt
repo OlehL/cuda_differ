@@ -1,3 +1,7 @@
+
+2022.10.05
++ add: command "Select all differences" (by @veksha)
+
 2022.04.02
 + add: menu items "Compare with tab" and "Compare with..." added to context menu of tab-header (patches by @ildarkhasanshin and Alexey T.)
 

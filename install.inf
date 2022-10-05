@@ -31,6 +31,11 @@ section=commands
 caption=Differ\Select current difference
 method=select_current
 
+[item6]
+section=commands
+caption=Differ\Select all differences
+method=select_all_diff
+
 [item10]
 section=commands
 caption=Differ\Jump to next difference
