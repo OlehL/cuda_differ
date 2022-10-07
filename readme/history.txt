@@ -2,7 +2,7 @@
 2022.10.05
 + add: command "Select all differences" (by @veksha)
 + add: if compared files are edited to become equal, "Refresh" command must clear all markers/bookmarks (by Alexey T.)
-+ add: if any of files don't have final EOL, add it to comparing text (by Alexey T.)
++ add: if any of compared files don't have final EOL, add it to comparing text (by Alexey T.)
 
 2022.04.02
 + add: menu items "Compare with tab" and "Compare with..." added to context menu of tab-header (patches by @ildarkhasanshin and Alexey T.)
