@@ -12,7 +12,7 @@ This will run CudaText with 2 given filenames in the Differ plugin.
 
 
 Authors:
-  OlehL ( https://github.com/OlehL )
+  OlehL, https://github.com/OlehL
   Alexey Torgashin (CudaText)
-  Andrey Kvichanskiy (kvichans on GitHub)
+  Andrey Kvichanskiy, https://github.com/kvichans
 License: MIT
