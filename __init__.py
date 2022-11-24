@@ -620,7 +620,7 @@ class Command:
                 ct.menu_proc(self.menuid_withtab, ct.MENU_CLEAR)
                 for path in paths:
                     ct.menu_proc(self.menuid_withtab, ct.MENU_ADD,
-                        command='module=cuda_differ;cmd=tabmenu_files;info='+path+';',
+                        command='module=cuda_differ;cmd=tabmenu_files;info='+cur_fn+'::'+path+';',
                         caption=collapse_filename(path)
                         )
 
@@ -635,16 +635,13 @@ class Command:
     def tabmenu_chooser_timer(self, tag='', info=''):
         self.compare_with()
 
-    def tabmenu_files(self, fn):
-        fn0 = ct.ed.get_filename()
-        if not fn0 or not fn:
-            return
-        callback = 'module=cuda_differ;cmd=tabmenu_files_timer;info='+fn0+'~~'+fn+';'
-        #print('tabmenu_files:', fn0, fn)
+    def tabmenu_files(self, info):
+        callback = 'module=cuda_differ;cmd=tabmenu_files_timer;info='+info+';'
+        #print('tabmenu_files:', info)
         ct.timer_proc(ct.TIMER_START_ONE, callback, 100)
 
     def tabmenu_files_timer(self, tag='', info=''):
-        fn0, fn1 = info.split('~~', maxsplit=1)
+        fn0, fn1 = info.split('::', maxsplit=1)
         self.set_files(fn0, fn1)
 
     def select_all_diff(self):
