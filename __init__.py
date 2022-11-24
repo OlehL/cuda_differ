@@ -222,11 +222,11 @@ class Command:
     def on_tab_change(self, ed_self):
         self.config()
         self.scroll.toggle(self.cfg.get('sync_scroll'))
-        self.tabmenu_init(True)
+        self.tabmenu_init(True, ed_self)
 
-    def on_open(self, ed_self):
+    def on_tab_menu(self, ed_self):
         #print('Differ on_open')
-        self.tabmenu_init(False)
+        self.tabmenu_init(False, ed_self)
 
     def refresh(self):
         if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
@@ -590,7 +590,7 @@ class Command:
             return False 
         return True
 
-    def tabmenu_init(self, is_tab_change):
+    def tabmenu_init(self, is_tab_change, cur_ed):
         if is_tab_change and self.menuid_sep is None:
             return
 
@@ -607,7 +607,7 @@ class Command:
                 )
 
         handles = ct.ed_handles()
-        cur_fn = ct.ed.get_filename()
+        cur_fn = cur_ed.get_filename()
         paths = []
         if len(handles) > 1:
             for h in handles:
@@ -624,7 +624,7 @@ class Command:
                         caption=collapse_filename(path)
                         )
 
-        cur_ok = self.tabmenu_editor_ok(ct.ed, '') 
+        cur_ok = self.tabmenu_editor_ok(cur_ed, '') 
         ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=cur_ok and bool(paths))
         ct.menu_proc(self.menuid_withfile, ct.MENU_SET_ENABLED, command=cur_ok)
 

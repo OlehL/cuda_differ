@@ -20,7 +20,7 @@ class ScrollSplittedTab:
                 ev = 'on_scroll,on_state,on_caret,on_change_slow'
         else:
             ev = 'on_state,on_caret,on_change_slow'
-        ev = 'on_open,on_tab_change,'+ev # these 2 events are needed for tab context menu
+        ev = 'on_tab_menu,on_tab_change,'+ev # these 2 events are needed for tab context menu
         ct.app_proc(ct.PROC_SET_EVENTS, self.name+';'+ev+';;')
         #print('Differ set events:', ev)
 
