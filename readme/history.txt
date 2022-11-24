@@ -1,4 +1,7 @@
 
+2022.11.24
+* change: changed on_open handler to on_tab_menu (of CudaText 1.177.3), so plugin's tab-menu items will disappaer in old CudaText versions (it was needed to fix big slowdown when user opens 700 files at once) (by Alexey T.) 
+
 2022.10.05
 + add: command "Select all differences" (by @veksha)
 + add: if compared files are edited to become equal, "Refresh" command must clear all markers/bookmarks (by Alexey T.)
