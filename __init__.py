@@ -606,7 +606,7 @@ class Command:
                 caption=_('Compare with tab')
                 )
 
-        handles = ct.ed_handles()
+        handles = ct.ed_handles()[:20] # avoid too much menu items when user opens 100 files
         cur_fn = cur_ed.get_filename()
         paths = []
         if len(handles) > 1:
