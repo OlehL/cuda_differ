@@ -1,6 +1,6 @@
 
 2022.11.24
-* change: changed on_open handler to on_tab_menu (of CudaText 1.177.3), so plugin's tab-menu items will disappaer in old CudaText versions (it was needed to fix big slowdown when user opens 700 files at once) (by Alexey T.) 
+* change: changed on_open handler to on_tab_menu (of CudaText 1.178.0), so plugin's tab-menu items will disappaer in old CudaText versions (it was needed to fix big slowdown when user opens 100+ files) (by Alexey T.)
 - fix: avoid too much menu items in tab-menu if user opened 20+ files
 
 2022.10.05
