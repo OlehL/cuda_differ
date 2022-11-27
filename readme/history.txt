@@ -1,3 +1,5 @@
+2022.11.27
+* change: removed on_tab_change handler, it caused big slowdown on closing 700 files in app
 
 2022.11.24
 * change: changed on_open handler to on_tab_menu (of CudaText 1.178.0), so plugin's tab-menu items will disappaer in old CudaText versions (it was needed to fix big slowdown when user opens 100+ files) (by Alexey T.)
