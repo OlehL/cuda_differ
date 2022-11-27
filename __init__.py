@@ -219,9 +219,11 @@ class Command:
         if self.cfg.get('enable_auto_refresh', False):
             self.refresh()
 
+    '''
     def on_tab_change(self, ed_self):
         self.config()
         self.scroll.toggle(self.cfg.get('sync_scroll'))
+    '''
 
     def on_tab_menu(self, ed_self):
         self.tabmenu_init(ed_self)
