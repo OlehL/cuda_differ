@@ -222,11 +222,9 @@ class Command:
     def on_tab_change(self, ed_self):
         self.config()
         self.scroll.toggle(self.cfg.get('sync_scroll'))
-        self.tabmenu_init(True, ed_self)
 
     def on_tab_menu(self, ed_self):
-        #print('Differ on_open')
-        self.tabmenu_init(False, ed_self)
+        self.tabmenu_init(ed_self)
 
     def refresh(self):
         if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
@@ -590,9 +588,7 @@ class Command:
             return False 
         return True
 
-    def tabmenu_init(self, is_tab_change, cur_ed):
-        if is_tab_change and self.menuid_sep is None:
-            return
+    def tabmenu_init(self, cur_ed):
 
         if self.menuid_sep is None:
             self.menuid_sep = ct.menu_proc('tab', ct.MENU_ADD,
