@@ -725,6 +725,6 @@ class Command:
         ed1 = ct.Editor(e.get_prop(ct.PROP_HANDLE_SECONDARY))
         fn0 = ed0.get_filename()
         fn1 = ed1.get_filename()
-        e.cmd(ct_cmd.cmd_FileClose)
+        ed0.cmd(ct_cmd.cmd_FileClose)
         ct.file_open(fn0)
         ct.file_open(fn1)
