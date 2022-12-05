@@ -648,6 +648,9 @@ class Command:
             self.menuid_withtab = ct.menu_proc(compare_menu, ct.MENU_ADD,
                 caption=_('Compare with tab')
                 )
+            self.menuid_sep = ct.menu_proc(compare_menu, ct.MENU_ADD,
+                caption='-'
+                )
             self.menuid_move2septabs = ct.menu_proc(compare_menu, ct.MENU_ADD,
                 command='module=cuda_differ;cmd=move_to_sep_tabs;',
                 caption=_('Back to separate tabs')
