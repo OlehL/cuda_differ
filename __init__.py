@@ -202,7 +202,7 @@ class Command:
         fn = e.get_filename()
         if fn:
             return fn==name
-        return False 
+        return False
 
     def set_files(self, file0, file1):
         files = [file0, file1]
@@ -629,7 +629,7 @@ class Command:
             return False
         fn = self.get_name(e)
         if bool(disabled_fn) and (fn==disabled_fn):
-            return False 
+            return False
         return True
 
     def tabmenu_init(self, cur_ed):
@@ -638,12 +638,22 @@ class Command:
             self.menuid_sep = ct.menu_proc('tab', ct.MENU_ADD,
                 caption='-'
                 )
-            self.menuid_withfile = ct.menu_proc('tab', ct.MENU_ADD,
+            compare_menu = ct.menu_proc('tab', ct.MENU_ADD,
+                caption=_('Differ')
+                )
+            self.menuid_withfile = ct.menu_proc(compare_menu, ct.MENU_ADD,
                 command='module=cuda_differ;cmd=tabmenu_chooser;',
                 caption=_('Compare with...')
                 )
-            self.menuid_withtab = ct.menu_proc('tab', ct.MENU_ADD,
+            self.menuid_withtab = ct.menu_proc(compare_menu, ct.MENU_ADD,
                 caption=_('Compare with tab')
+                )
+            self.menuid_sep = ct.menu_proc(compare_menu, ct.MENU_ADD,
+                caption='-'
+                )
+            self.menuid_move2septabs = ct.menu_proc(compare_menu, ct.MENU_ADD,
+                command='module=cuda_differ;cmd=move_to_sep_tabs_context;',
+                caption=_('Back to separate tabs')
                 )
 
         handles = ct.ed_handles()[:30] # avoid too much menu items when user opens 100 files
@@ -665,9 +675,10 @@ class Command:
                         caption=collapse_filename(path)
                         )
 
-        cur_ok = self.tabmenu_editor_ok(cur_ed, '') 
+        cur_ok = self.tabmenu_editor_ok(cur_ed, '')
         ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=cur_ok and bool(paths))
         ct.menu_proc(self.menuid_withfile, ct.MENU_SET_ENABLED, command=cur_ok)
+        ct.menu_proc(self.menuid_move2septabs, ct.MENU_SET_ENABLED, command=ct.ed.get_prop(ct.PROP_EDITORS_LINKED)==False)
 
     def tabmenu_chooser(self):
         callback = 'module=cuda_differ;cmd=tabmenu_chooser_timer;info=_;'
