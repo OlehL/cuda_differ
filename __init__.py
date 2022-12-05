@@ -678,7 +678,7 @@ class Command:
         cur_ok = self.tabmenu_editor_ok(cur_ed, '')
         ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=cur_ok and bool(paths))
         ct.menu_proc(self.menuid_withfile, ct.MENU_SET_ENABLED, command=cur_ok)
-        ct.menu_proc(self.menuid_move2septabs, ct.MENU_SET_ENABLED, command=ct.ed.get_prop(ct.PROP_EDITORS_LINKED)==False)
+        ct.menu_proc(self.menuid_move2septabs, ct.MENU_SET_ENABLED, command=cur_ed.get_prop(ct.PROP_EDITORS_LINKED)==False)
 
     def tabmenu_chooser(self):
         callback = 'module=cuda_differ;cmd=tabmenu_chooser_timer;info=_;'
