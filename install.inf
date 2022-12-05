@@ -13,8 +13,13 @@ method=choose_files
 
 [item2]
 section=commands
-caption=Differ\Compare current file with...
+caption=Differ\Compare current document with file...
 method=compare_with
+
+[item2b]
+section=commands
+caption=Differ\Compare current document with tab...
+method=compare_with_tab
 
 [item3]
 section=commands

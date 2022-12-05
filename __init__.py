@@ -173,16 +173,28 @@ class Command:
         self.set_files(fn1, fn2)
 
     def compare_with(self):
-        '''
-        if ct.ed.get_prop(ct.PROP_MODIFIED):
-            ct.msg_status(_('Cannot compare modified document, save it first'))
-            return
-        '''
         fn0 = self.get_name(ct.ed)
         fn = ct.dlg_file(True, '!', '', '')
         if not fn:
             return
         self.set_files(fn0, fn)
+
+    def compare_with_tab(self):
+        name0 = self.get_name(ct.ed)
+        names = []
+        for h in ct.ed_handles():
+            e = ct.Editor(h)
+            if self.is_match_name(e, name0):
+                continue
+            names.append(self.get_name(e))
+        if not names:
+            return
+
+        res = ct.dlg_menu(ct.DMENU_LIST, names, caption=_('Compare file with tab'))
+        if res is None:
+            return
+        name = names[res]
+        self.set_files(name0, name)
 
     def is_match_name(self, e, name):
         if name.startswith(U_PREFIX):
