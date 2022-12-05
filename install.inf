@@ -71,6 +71,11 @@ section=commands
 caption=Differ\Copy current line to the left
 method=copy_line_left
 
+[item30]
+section=commands
+caption=Differ\Move 2 comparing files to separate tabs
+method=move_to_sep_tabs
+
 [item40]
 section=commands
 caption=Differ\Config...

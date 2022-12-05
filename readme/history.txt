@@ -1,4 +1,5 @@
 2022.12.05
++ add: command "Move 2 comparing files to separate tabs"
 + add: command "Compare current document with tab..."
 + add: support work with untitled tabs too; untitled tab will be auto-saved to temp-dir (by Alexey T.)
 

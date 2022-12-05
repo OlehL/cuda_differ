@@ -696,3 +696,14 @@ class Command:
         for n, df in enumerate(self.diff.diffmap):
             id = ct.CARET_SET_ONE if n == 0 else ct.CARET_ADD
             eds[fc].set_caret(0, df[y1], 0, df[y2], id=id)
+
+    def move_to_sep_tabs(self):
+        if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
+            return
+        ed0 = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY))
+        ed1 = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY))
+        fn0 = ed0.get_filename()
+        fn1 = ed1.get_filename()
+        ed0.cmd(ct_cmd.cmd_FileClose)
+        ct.file_open(fn0)
+        ct.file_open(fn1)
