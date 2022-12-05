@@ -639,7 +639,7 @@ class Command:
                 caption='-'
                 )
             compare_menu = ct.menu_proc('tab', ct.MENU_ADD,
-                caption=_('Differ')
+                caption=PLG_NAME
                 )
             self.menuid_withfile = ct.menu_proc(compare_menu, ct.MENU_ADD,
                 command='module=cuda_differ;cmd=tabmenu_chooser;',
