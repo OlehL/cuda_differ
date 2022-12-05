@@ -3,7 +3,7 @@ title=Differ
 desc=Plugin to compare two files and show compare results side by side
 type=cudatext-plugin
 subdir=cuda_differ
-homepage=https://github.com/OlehL/cuda_differ
+homepage=https://github.com/CudaText-addons/cuda_differ
 api=1.0.302
 
 [item1]
@@ -30,6 +30,11 @@ method=set_focus_to_opposite_panel
 section=commands
 caption=Differ\Select current difference
 method=select_current
+
+[item6]
+section=commands
+caption=Differ\Select all differences
+method=select_all_diff
 
 [item10]
 section=commands
@@ -72,3 +77,9 @@ section=commands
 caption=Differ\Clear recents history
 method=clear_history
 menu=o
+
+[item100]
+section=events
+events=on_tab_menu
+;events=on_tab_menu,on_tab_change~
+;on_tab_change is 'lazy'

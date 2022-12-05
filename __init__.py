@@ -2,6 +2,7 @@ import os
 import json
 from time import sleep
 import typing as tp
+import tempfile
 
 import cudatext as ct
 import cudatext_cmd as ct_cmd
@@ -21,6 +22,7 @@ NKIND_CHANGED = 26
 GAP_WIDTH = 5000
 DECOR_CHAR = '■'
 DEFAULT_SYNC_SCROLL = '1'
+U_PREFIX = 'untitled:'
 
 PLG_NAME = 'Differ'
 METAJSONFILE = os.path.dirname(__file__) + os.sep + 'differ_opts.json'
@@ -84,6 +86,31 @@ OPTS_META = [
 ]
 
 
+TEMP_DIR = os.path.join(tempfile.gettempdir(), 'cuda_differ')
+TEMP_INDEX = 0
+
+def get_temp_name():
+    global TEMP_DIR
+    global TEMP_INDEX
+    if not os.path.isdir(TEMP_DIR):
+        os.mkdir(TEMP_DIR)
+    if not os.path.isdir(TEMP_DIR):
+        return
+    while True:
+        TEMP_INDEX += 1
+        fn = os.path.join(TEMP_DIR, 'text'+str(TEMP_INDEX))
+        if not os.path.isfile(fn):
+            return fn
+
+
+_homedir = os.path.expanduser('~')
+
+def collapse_filename(fn):
+    if (fn+'/').startswith(_homedir+'/'):
+        fn = fn.replace(_homedir, '~', 1)
+    return fn
+
+
 def get_opt(key, def_val: tp.Any = ''):
     return ctx.get_opt('differ.' + key, def_val, user_json=JSONFILE) \
            if ctx.version(0) >= '0.6.8' \
@@ -105,6 +132,10 @@ class Command:
         self.cfg = self.get_config()
         self.diff = df.Differ()
         self.diff_dlg = DifferDialog()
+
+        self.menuid_sep = None
+        self.menuid_withfile = None
+        self.menuid_withtab = None
 
     def change_config(self):
         try:
@@ -142,35 +173,41 @@ class Command:
         self.set_files(fn1, fn2)
 
     def compare_with(self):
-        fn0 = ct.ed.get_filename()
-        if not fn0:
-            ct.msg_status(_('Cannot compare untitled document'))
-            return
+        '''
         if ct.ed.get_prop(ct.PROP_MODIFIED):
             ct.msg_status(_('Cannot compare modified document, save it first'))
             return
+        '''
+        fn0 = self.get_name(ct.ed)
         fn = ct.dlg_file(True, '!', '', '')
         if not fn:
             return
         self.set_files(fn0, fn)
 
-    def set_files(self, *files):
-        for f in files:
+    def is_match_name(self, e, name):
+        if name.startswith(U_PREFIX):
+            return name[len(U_PREFIX):] == e.get_prop(ct.PROP_TAB_TITLE)
+        fn = e.get_filename()
+        if fn:
+            return fn==name
+        return False 
+
+    def set_files(self, file0, file1):
+        files = [file0, file1]
+        for (index, name) in enumerate(files):
             for h in ct.ed_handles():
                 e = ct.Editor(h)
-                file_name = e.get_filename()
-                if file_name == f:
+                if self.is_match_name(e, name):
                     if e.get_prop(ct.PROP_MODIFIED):
-                        text = _('First you must save file:\n'
-                                 '{}'
-                                 '\nYES: save and continue\n'
-                                 "NO: don't save (changes will be lost)").format(file_name)
-                        mb = ct.msg_box(text,
-                                        ct.MB_YESNOCANCEL+ct.MB_ICONQUESTION)
-                        if mb == ct.ID_YES:
-                            e.save(file_name)
-                        elif mb == ct.ID_NO:
-                            e.set_prop(ct.PROP_MODIFIED, False)
+                        text = _('First you must save file:\n{}').format(name)
+                        if name.startswith(U_PREFIX):
+                            mb = ct.ID_OK
+                        else:
+                            mb = ct.msg_box(text, ct.MB_OKCANCEL+ct.MB_ICONQUESTION)
+                        if mb == ct.ID_OK:
+                            if not e.save(get_temp_name()):
+                                return
+                            files[index] = e.get_filename()
                         else:
                             return
                     e.focus()
@@ -207,9 +244,14 @@ class Command:
         if self.cfg.get('enable_auto_refresh', False):
             self.refresh()
 
+    '''
     def on_tab_change(self, ed_self):
         self.config()
         self.scroll.toggle(self.cfg.get('sync_scroll'))
+    '''
+
+    def on_tab_menu(self, ed_self):
+        self.tabmenu_init(ed_self)
 
     def refresh(self):
         if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
@@ -226,17 +268,25 @@ class Command:
         b_text_all = b_ed.get_text_all()
 
         if a_text_all == '':
-            t = _('The file:\n{}\nis empty.').format(a_file)
+            t = _('The file:\n{}\nis empty.').format(collapse_filename(a_file))
             ct.msg_box(t, ct.MB_OK)
             return
 
         if b_text_all == '':
-            t = _('The file:\n{}\nis empty.').format(b_file)
+            t = _('The file:\n{}\nis empty.').format(collapse_filename(b_file))
             ct.msg_box(t, ct.MB_OK)
             return
 
+        if not a_text_all.endswith('\n'):
+            a_text_all += '\n'
+        if not b_text_all.endswith('\n'):
+            b_text_all += '\n'
+
         if a_text_all == b_text_all:
-            t = _('The files are identical:\n{0}\n{1}').format(a_file, b_file)
+            self.clear(a_ed)
+            self.clear(b_ed)
+            self.diff.diffmap = []
+            t = _('The files are identical:\n{0}\n{1}').format(collapse_filename(a_file), collapse_filename(b_file))
             ct.msg_box(t, ct.MB_OK)
             return
 
@@ -552,3 +602,85 @@ class Command:
                 eds[op].set_caret(x, df[op*2]-df[p]+y)
                 self.cfg['enable_sync_caret'] = esc
                 return
+
+    def get_name(self, e):
+        fn = e.get_filename()
+        if fn:
+            return fn
+        else:
+            return U_PREFIX+e.get_prop(ct.PROP_TAB_TITLE)
+
+    def tabmenu_editor_ok(self, e, disabled_fn):
+        if not e.get_prop(ct.PROP_EDITORS_LINKED):
+            return False
+        if e.get_prop(ct.PROP_KIND) != 'text':
+            return False
+        fn = self.get_name(e)
+        if bool(disabled_fn) and (fn==disabled_fn):
+            return False 
+        return True
+
+    def tabmenu_init(self, cur_ed):
+
+        if self.menuid_sep is None:
+            self.menuid_sep = ct.menu_proc('tab', ct.MENU_ADD,
+                caption='-'
+                )
+            self.menuid_withfile = ct.menu_proc('tab', ct.MENU_ADD,
+                command='module=cuda_differ;cmd=tabmenu_chooser;',
+                caption=_('Compare with...')
+                )
+            self.menuid_withtab = ct.menu_proc('tab', ct.MENU_ADD,
+                caption=_('Compare with tab')
+                )
+
+        handles = ct.ed_handles()[:30] # avoid too much menu items when user opens 100 files
+        cur_fn = self.get_name(cur_ed)
+
+        paths = []
+        if len(handles) > 1:
+            for h in handles:
+                e = ct.Editor(h)
+                if self.tabmenu_editor_ok(e, cur_fn):
+                    path = self.get_name(e)
+                    paths.append(path)
+
+            if paths:
+                ct.menu_proc(self.menuid_withtab, ct.MENU_CLEAR)
+                for path in paths:
+                    ct.menu_proc(self.menuid_withtab, ct.MENU_ADD,
+                        command='module=cuda_differ;cmd=tabmenu_files;info='+cur_fn+'::'+path+';',
+                        caption=collapse_filename(path)
+                        )
+
+        cur_ok = self.tabmenu_editor_ok(cur_ed, '') 
+        ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=cur_ok and bool(paths))
+        ct.menu_proc(self.menuid_withfile, ct.MENU_SET_ENABLED, command=cur_ok)
+
+    def tabmenu_chooser(self):
+        callback = 'module=cuda_differ;cmd=tabmenu_chooser_timer;info=_;'
+        ct.timer_proc(ct.TIMER_START_ONE, callback, 100)
+
+    def tabmenu_chooser_timer(self, tag='', info=''):
+        self.compare_with()
+
+    def tabmenu_files(self, info):
+        callback = 'module=cuda_differ;cmd=tabmenu_files_timer;info='+info+';'
+        #print('tabmenu_files:', info)
+        ct.timer_proc(ct.TIMER_START_ONE, callback, 100)
+
+    def tabmenu_files_timer(self, tag='', info=''):
+        fn0, fn1 = info.split('::', maxsplit=1)
+        self.set_files(fn0, fn1)
+
+    def select_all_diff(self):
+        if not self.diff.diffmap:
+            self.refresh()
+        if len(self.diff.diffmap) == 0:
+            return ct.msg_status(_("No differences were found"))
+        fc, eds = self.focused
+        y1,y2 = (0,1) if fc == 0 else (2,3)
+
+        for n, df in enumerate(self.diff.diffmap):
+            id = ct.CARET_SET_ONE if n == 0 else ct.CARET_ADD
+            eds[fc].set_caret(0, df[y1], 0, df[y2], id=id)

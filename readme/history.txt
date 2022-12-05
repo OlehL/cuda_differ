@@ -1,3 +1,20 @@
+2022.12.05
++ add: support work with untitled tabs too; untitled tab will be auto-saved to temp-dir (by Alexey T.)
+
+2022.11.27
+* change: removed on_tab_change handler, it caused big slowdown on closing 700 files in app (by Alexey T.)
+
+2022.11.24
+* change: changed on_open handler to on_tab_menu (of CudaText 1.178.0), so plugin's tab-menu items will disappaer in old CudaText versions (it was needed to fix big slowdown when user opens 100+ files) (by Alexey T.)
+- fix: avoid too much menu items in tab-menu if user opened 20+ files
+
+2022.10.05
++ add: command "Select all differences" (by @veksha)
++ add: if compared files are edited to become equal, "Refresh" command must clear all markers/bookmarks (by Alexey T.)
++ add: if any of compared files don't have final EOL, add it to comparing text (by Alexey T.)
+
+2022.04.02
++ add: menu items "Compare with tab" and "Compare with..." added to context menu of tab-header (patches by @ildarkhasanshin and Alexey T.)
 
 2021.08.20
 + add: i18n support (patch by Markus)
@@ -57,7 +74,7 @@
 2019.04.17
 * require CudaText 1.78.7
 + add: changed sync-scroll to smooth (per pixel) scroll
-+ add: if 2+ groups are opened in CudaText, suggest in Choose Files dialog files from groups 1 and 2 
++ add: if 2+ groups are opened in CudaText, suggest in Choose Files dialog files from groups 1 and 2
 
 2019.02.07
 - minor fixes

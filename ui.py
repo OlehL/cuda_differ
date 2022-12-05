@@ -1,4 +1,4 @@
-﻿import os
+import os
 import cudatext as ct
 import cudax_lib as appx
 
@@ -106,7 +106,7 @@ class DifferDialog:
                           'y': center_ct()[1]-90,
                           'w': 550,
                           'h': 180,
-                          'resize': False,
+                          'border': ct.DBORDER_DIALOG,
                           "keypreview": True,
                           'on_key_down': self.press_key
                           }
