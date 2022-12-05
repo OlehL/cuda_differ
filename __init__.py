@@ -2,6 +2,7 @@ import os
 import json
 from time import sleep
 import typing as tp
+import tempfile
 
 import cudatext as ct
 import cudatext_cmd as ct_cmd
@@ -21,6 +22,7 @@ NKIND_CHANGED = 26
 GAP_WIDTH = 5000
 DECOR_CHAR = '■'
 DEFAULT_SYNC_SCROLL = '1'
+U_PREFIX = 'untitled:'
 
 PLG_NAME = 'Differ'
 METAJSONFILE = os.path.dirname(__file__) + os.sep + 'differ_opts.json'
@@ -82,6 +84,23 @@ OPTS_META = [
      'chp': 'config',
      },
 ]
+
+
+TEMP_DIR = os.path.join(tempfile.gettempdir(), 'cuda_differ')
+TEMP_INDEX = 0
+
+def get_temp_name():
+    global TEMP_DIR
+    global TEMP_INDEX
+    if not os.path.isdir(TEMP_DIR):
+        os.mkdir(TEMP_DIR)
+    if not os.path.isdir(TEMP_DIR):
+        return
+    while True:
+        TEMP_INDEX += 1
+        fn = os.path.join(TEMP_DIR, 'text'+str(TEMP_INDEX))
+        if not os.path.isfile(fn):
+            return fn
 
 
 _homedir = os.path.expanduser('~')
@@ -154,35 +173,41 @@ class Command:
         self.set_files(fn1, fn2)
 
     def compare_with(self):
-        fn0 = ct.ed.get_filename()
-        if not fn0:
-            ct.msg_status(_('Cannot compare untitled document'))
-            return
+        '''
         if ct.ed.get_prop(ct.PROP_MODIFIED):
             ct.msg_status(_('Cannot compare modified document, save it first'))
             return
+        '''
+        fn0 = self.get_name(ct.ed)
         fn = ct.dlg_file(True, '!', '', '')
         if not fn:
             return
         self.set_files(fn0, fn)
 
-    def set_files(self, *files):
-        for f in files:
+    def is_match_name(self, e, name):
+        if name.startswith(U_PREFIX):
+            return name[len(U_PREFIX):] == e.get_prop(ct.PROP_TAB_TITLE)
+        fn = e.get_filename()
+        if fn:
+            return fn==name
+        return False 
+
+    def set_files(self, file0, file1):
+        files = [file0, file1]
+        for (index, name) in enumerate(files):
             for h in ct.ed_handles():
                 e = ct.Editor(h)
-                file_name = e.get_filename()
-                if file_name == f:
+                if self.is_match_name(e, name):
                     if e.get_prop(ct.PROP_MODIFIED):
-                        text = _('First you must save file:\n'
-                                 '{}'
-                                 '\nYES: save and continue\n'
-                                 "NO: don't save (changes will be lost)").format(file_name)
-                        mb = ct.msg_box(text,
-                                        ct.MB_YESNOCANCEL+ct.MB_ICONQUESTION)
-                        if mb == ct.ID_YES:
-                            e.save(file_name)
-                        elif mb == ct.ID_NO:
-                            e.set_prop(ct.PROP_MODIFIED, False)
+                        text = _('First you must save file:\n{}').format(name)
+                        if name.startswith(U_PREFIX):
+                            mb = ct.ID_OK
+                        else:
+                            mb = ct.msg_box(text, ct.MB_OKCANCEL+ct.MB_ICONQUESTION)
+                        if mb == ct.ID_OK:
+                            if not e.save(get_temp_name()):
+                                return
+                            files[index] = e.get_filename()
                         else:
                             return
                     e.focus()
@@ -578,14 +603,19 @@ class Command:
                 self.cfg['enable_sync_caret'] = esc
                 return
 
+    def get_name(self, e):
+        fn = e.get_filename()
+        if fn:
+            return fn
+        else:
+            return U_PREFIX+e.get_prop(ct.PROP_TAB_TITLE)
+
     def tabmenu_editor_ok(self, e, disabled_fn):
         if not e.get_prop(ct.PROP_EDITORS_LINKED):
             return False
         if e.get_prop(ct.PROP_KIND) != 'text':
             return False
-        fn = e.get_filename()
-        if not fn:
-            return False
+        fn = self.get_name(e)
         if bool(disabled_fn) and (fn==disabled_fn):
             return False 
         return True
@@ -605,13 +635,13 @@ class Command:
                 )
 
         handles = ct.ed_handles()[:20] # avoid too much menu items when user opens 100 files
-        cur_fn = cur_ed.get_filename()
+        cur_fn = self.get_name(cur_ed)
         paths = []
         if len(handles) > 1:
             for h in handles:
                 e = ct.Editor(h)
                 if self.tabmenu_editor_ok(e, cur_fn):
-                    path = e.get_filename()
+                    path = self.get_name(e)
                     paths.append(path)
 
             if paths:

@@ -1,5 +1,8 @@
+2022.12.05
++ add: support work with untitled tabs too; untitled tab will be auto-saved to temp-dir (by Alexey T.)
+
 2022.11.27
-* change: removed on_tab_change handler, it caused big slowdown on closing 700 files in app
+* change: removed on_tab_change handler, it caused big slowdown on closing 700 files in app (by Alexey T.)
 
 2022.11.24
 * change: changed on_open handler to on_tab_menu (of CudaText 1.178.0), so plugin's tab-menu items will disappaer in old CudaText versions (it was needed to fix big slowdown when user opens 100+ files) (by Alexey T.)
