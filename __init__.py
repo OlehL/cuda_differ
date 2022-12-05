@@ -698,12 +698,22 @@ class Command:
             eds[fc].set_caret(0, df[y1], 0, df[y2], id=id)
 
     def move_to_sep_tabs(self):
-        if ct.ed.get_prop(ct.PROP_EDITORS_LINKED):
+        self.move_to_sep_tabs_ex(ct.ed)
+
+    def move_to_sep_tabs_context(self):
+        if ct.app_api_version()>='1.0.435':
+            e = ct.Editor(1)
+        else:
+            e = ct.ed
+        self.move_to_sep_tabs_ex(e)
+
+    def move_to_sep_tabs_ex(self, e):
+        if e.get_prop(ct.PROP_EDITORS_LINKED):
             return
-        ed0 = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY))
-        ed1 = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY))
+        ed0 = ct.Editor(e.get_prop(ct.PROP_HANDLE_PRIMARY))
+        ed1 = ct.Editor(e.get_prop(ct.PROP_HANDLE_SECONDARY))
         fn0 = ed0.get_filename()
         fn1 = ed1.get_filename()
-        ed0.cmd(ct_cmd.cmd_FileClose)
+        e.cmd(ct_cmd.cmd_FileClose)
         ct.file_open(fn0)
         ct.file_open(fn1)
