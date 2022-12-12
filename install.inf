@@ -90,6 +90,4 @@ menu=o
 
 [item100]
 section=events
-events=on_tab_menu
-;events=on_tab_menu,on_tab_change~
-;on_tab_change is 'lazy'
+events=on_tab_menu,on_exit

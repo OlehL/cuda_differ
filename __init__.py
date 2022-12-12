@@ -729,3 +729,8 @@ class Command:
         ed0.cmd(ct_cmd.cmd_FileClose)
         ct.file_open(fn0)
         ct.file_open(fn1)
+
+    def on_exit(self, ed_self):
+        if os.path.isdir(TEMP_DIR):
+            import shutil
+            shutil.rmtree(TEMP_DIR)

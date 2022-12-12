@@ -1,3 +1,6 @@
+2022.12.12
++ add: clean temp-dir on exiting
+
 2022.12.05
 + add: command "Move 2 comparing files to separate tabs"
 + add: command "Compare current document with tab..."
