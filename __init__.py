@@ -198,7 +198,7 @@ class Command:
 
     def is_match_name(self, e, name):
         if name.startswith(U_PREFIX):
-            return name[len(U_PREFIX):] == e.get_prop(ct.PROP_TAB_TITLE)
+            return name[len(U_PREFIX):] == e.get_prop(ct.PROP_TAB_TITLE)+' [%d]'%e.get_prop(ct.PROP_TAB_ID)
         fn = e.get_filename()
         if fn:
             return fn==name
@@ -620,7 +620,7 @@ class Command:
         if fn:
             return fn
         else:
-            return U_PREFIX+e.get_prop(ct.PROP_TAB_TITLE)
+            return U_PREFIX+e.get_prop(ct.PROP_TAB_TITLE)+' [%d]'%e.get_prop(ct.PROP_TAB_ID)
 
     def tabmenu_editor_ok(self, e, disabled_fn):
         if not e.get_prop(ct.PROP_EDITORS_LINKED):
