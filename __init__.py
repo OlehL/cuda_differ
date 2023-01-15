@@ -483,10 +483,17 @@ class Command:
         else:
             p = 2 if to_next else 3
         y = eds[fc].get_carets()[0][1]
-        for n, df in enumerate(self.diff.diffmap):
-            if y < df[p]:
-                i = n if to_next else n - 1
-                break
+        
+        if to_next:
+            for n, df in enumerate(self.diff.diffmap):
+                if y < df[p]:
+                    i = n
+                    break
+        else:
+            for n, df in reversed(list(enumerate(self.diff.diffmap))):
+                if y >= df[p]:
+                    i = n - 1 if y == df[p] else n
+                    break
 
         if i is None:
             i = 0 if to_next else len(self.diff.diffmap) - 1
@@ -495,8 +502,8 @@ class Command:
         elif i < 0:
             i = len(self.diff.diffmap) - 1
         to = self.diff.diffmap[i]
-        eds[0].set_caret(0, to[0], 0, to[1], ct.CARET_SET_ONE)
-        eds[1].set_caret(0, to[2], 0, to[3], ct.CARET_SET_ONE)
+        eds[0].set_caret(0, to[0], id=ct.CARET_SET_ONE)
+        eds[1].set_caret(0, to[2], id=ct.CARET_SET_ONE)
 
     def jump_next(self):
         self.jump()
