@@ -490,10 +490,11 @@ class Command:
                 if y < df[p]:
                     i = n
                     break
-        else:
+        else: # to prev
             for n, df in reversed(list(enumerate(self.diff.diffmap))):
-                if y >= df[p]:
-                    i = n - 1 if y == df[p] else n
+                _y = y if df[p] == df[p-1] else y + 1 # adjust y for empty diff fragments
+                if _y > df[p]:
+                    i = n
                     break
 
         if i is None:
