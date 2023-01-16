@@ -504,6 +504,7 @@ class Command:
         elif i < 0:
             i = cnt - 1
         to = self.diff.diffmap[i]
+        ct.msg_status(_("{} of {} difference").format(i+1, cnt))
         eds[0].set_caret(0, to[0], id=ct.CARET_SET_ONE)
         eds[1].set_caret(0, to[2], id=ct.CARET_SET_ONE)
 
