@@ -496,8 +496,8 @@ class Command:
         elif i < 0:
             i = cnt - 1
         to = self.diff.diffmap[i]
-        eds[0].set_caret(0, to[0], 0, to[1], ct.CARET_SET_ONE)
-        eds[1].set_caret(0, to[2], 0, to[3], ct.CARET_SET_ONE)
+        eds[0].set_caret(0, to[0], id=ct.CARET_SET_ONE)
+        eds[1].set_caret(0, to[2], id=ct.CARET_SET_ONE)
 
     def jump_next(self):
         self.jump()
