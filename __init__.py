@@ -478,7 +478,7 @@ class Command:
             return ct.msg_status(_("No differences were found"))
         fc, eds = self.focused
 
-        i = None if to_next else cnt - 2 # second to last index is the default when going back
+        i = None if to_next else cnt - 1 # last index is the default when going back
         if fc == 0:
             p = 0 if to_next else 1
         else:
