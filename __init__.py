@@ -473,7 +473,8 @@ class Command:
     def jump(self, to_next=True):
         if not self.diff.diffmap:
             self.refresh()
-        if len(self.diff.diffmap) == 0:
+        cnt = len(self.diff.diffmap)
+        if cnt == 0:
             return ct.msg_status(_("No differences were found"))
         fc, eds = self.focused
 
@@ -496,11 +497,11 @@ class Command:
                     break
 
         if i is None:
-            i = 0 if to_next else len(self.diff.diffmap) - 1
-        elif i >= len(self.diff.diffmap):
+            i = 0 if to_next else cnt - 1
+        elif i >= cnt:
             i = 0
         elif i < 0:
-            i = len(self.diff.diffmap) - 1
+            i = cnt - 1
         to = self.diff.diffmap[i]
         eds[0].set_caret(0, to[0], id=ct.CARET_SET_ONE)
         eds[1].set_caret(0, to[2], id=ct.CARET_SET_ONE)
