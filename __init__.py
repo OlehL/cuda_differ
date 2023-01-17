@@ -473,7 +473,8 @@ class Command:
     def jump(self, to_next=True):
         if not self.diff.diffmap:
             self.refresh()
-        if len(self.diff.diffmap) == 0:
+        cnt = len(self.diff.diffmap)
+        if cnt == 0:
             return ct.msg_status(_("No differences were found"))
         fc, eds = self.focused
 
@@ -483,20 +484,29 @@ class Command:
         else:
             p = 2 if to_next else 3
         y = eds[fc].get_carets()[0][1]
-        for n, df in enumerate(self.diff.diffmap):
-            if y < df[p]:
-                i = n if to_next else n - 1
-                break
+        
+        if to_next:
+            for n, df in enumerate(self.diff.diffmap):
+                if y < df[p]:
+                    i = n
+                    break
+        else: # to prev
+            for n, df in reversed(list(enumerate(self.diff.diffmap))):
+                _y = y if df[p] == df[p-1] else y + 1 # adjust y for empty diff fragments
+                if _y > df[p]:
+                    i = n
+                    break
 
         if i is None:
-            i = 0 if to_next else len(self.diff.diffmap) - 1
-        elif i >= len(self.diff.diffmap):
+            i = 0 if to_next else cnt - 1
+        elif i >= cnt:
             i = 0
         elif i < 0:
-            i = len(self.diff.diffmap) - 1
+            i = cnt - 1
         to = self.diff.diffmap[i]
-        eds[0].set_caret(0, to[0], 0, to[1], ct.CARET_SET_ONE)
-        eds[1].set_caret(0, to[2], 0, to[3], ct.CARET_SET_ONE)
+        ct.msg_status(_("{} of {} difference").format(i+1, cnt))
+        eds[0].set_caret(0, to[0], id=ct.CARET_SET_ONE)
+        eds[1].set_caret(0, to[2], id=ct.CARET_SET_ONE)
 
     def jump_next(self):
         self.jump()
