@@ -1,4 +1,4 @@
-from difflib import SequenceMatcher
+from difflib import SequenceMatcher, unified_diff
 
 
 A_LINE_DEL = '-'
@@ -72,6 +72,10 @@ class Differ:
                     for y in range(j1, j2):
                         yield (B_LINE_CHANGE, y)
                         yield (B_DECOR_YELLOW, y)
+
+    def unidiff(self, a, b, f1, f2, n):
+        print('n='+str(n)) # always prints 3 :-(
+        return ''.join(unified_diff(a, b, f1, f2, n=n))
 
     def _fancy_replace(self, a, alo, ahi, b, blo, bhi):
         best_ratio, cutoff = self.ratio-0.01, self.ratio
