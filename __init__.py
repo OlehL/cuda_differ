@@ -484,10 +484,12 @@ class Command:
         else:
             p = 2 if to_next else 3
         y = eds[fc].get_carets()[0][1]
+        line_cnt = eds[fc].get_line_count()
         
         if to_next:
             for n, df in enumerate(self.diff.diffmap):
-                if y < df[p]:
+                df_y = df[p] if df[p] <= line_cnt - 1 else line_cnt - 1
+                if y < df_y:
                     i = n
                     break
         else: # to prev
@@ -505,8 +507,12 @@ class Command:
             i = cnt - 1
         to = self.diff.diffmap[i]
         ct.msg_status(_("{} of {} difference").format(i+1, cnt))
-        eds[0].set_caret(0, to[0], id=ct.CARET_SET_ONE)
-        eds[1].set_caret(0, to[2], id=ct.CARET_SET_ONE)
+        a_line_cnt = eds[0].get_line_count()
+        b_line_cnt = eds[1].get_line_count()
+        to0 = to[0] if to[0] <= a_line_cnt - 1 else a_line_cnt - 1
+        to2 = to[2] if to[2] <= b_line_cnt - 1 else b_line_cnt - 1
+        eds[0].set_caret(0, to0, id=ct.CARET_SET_ONE)
+        eds[1].set_caret(0, to2, id=ct.CARET_SET_ONE)
 
     def jump_next(self):
         self.jump()
