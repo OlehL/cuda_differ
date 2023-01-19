@@ -290,6 +290,8 @@ class Command:
         self.refresh()
 
     def create_diff(self, txt0, txt1, fn0, fn1):
+        if txt0[-1] != '\n': txt0 += '\n'
+        if txt1[-1] != '\n': txt1 += '\n'
         a = txt0.splitlines(True)
         b = txt1.splitlines(True)
         r = self.diff.unidiff(a, b, fn0, fn1, self.cfg.get('diff_context'))
