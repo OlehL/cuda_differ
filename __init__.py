@@ -123,9 +123,7 @@ def collapse_filename(fn):
 
 
 def get_opt(key, def_val: tp.Any = ''):
-    return ctx.get_opt('differ.' + key, def_val, user_json=JSONFILE) \
-           if ctx.version(0) >= '0.6.8' \
-           else ctx.get_opt('differ.' + key, def_val)
+    return ctx.get_opt('differ.' + key, def_val, user_json=JSONFILE)
 
 
 def msg(s, level=0):
