@@ -1,3 +1,6 @@
+2023.01.18
++ add: commands to produce a diff file (or patch)
+
 2022.12.28
 + add: support different untitled tabs which have the same tab-title
 

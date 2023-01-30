@@ -3,6 +3,7 @@ import json
 from time import sleep
 import typing as tp
 import tempfile
+from pathlib import Path
 
 import cudatext as ct
 import cudatext_cmd as ct_cmd
@@ -14,6 +15,7 @@ from .ui import DifferDialog, file_history
 
 from cudax_lib import get_translation
 _ = get_translation(__file__)  # I18N
+
 
 DIFF_TAG = 148
 NKIND_DELETED = 24
@@ -28,6 +30,7 @@ PLG_NAME = 'Differ'
 METAJSONFILE = os.path.dirname(__file__) + os.sep + 'differ_opts.json'
 JSONFILE = 'cuda_differ.json'  # To store in settings/cuda_differ.json
 JSONPATH = ct.app_path(ct.APP_DIR_SETTINGS) + os.sep + JSONFILE
+
 OPTS_META = [
     {'opt': 'differ.changed_color',
      'cmt': _('Color of changed lines'),
@@ -83,11 +86,19 @@ OPTS_META = [
      'frm': 'bool',
      'chp': 'config',
      },
+     {'opt': 'differ.diff_context',
+     'cmt': _('Number of lines of context displayed when diffing files'),
+     'def':  3,
+     'frm': 'int',
+     'chp': 'config',
+     },
 ]
-
 
 TEMP_DIR = os.path.join(tempfile.gettempdir(), 'cuda_differ')
 TEMP_INDEX = 0
+
+DIFF_TAB_COUNT = 1
+
 
 def get_temp_name():
     global TEMP_DIR
@@ -196,8 +207,42 @@ class Command:
         name = names[res]
         self.set_files(name0, name)
 
-    def format_untitled(self, e):
+    def diff_with(self):
+        fn0 = self.get_name(ct.ed)
+        fn = ct.dlg_file(True, '!', '', '')
+        if not fn:
+            return
 
+        enc = ct.ed.get_prop(ct.PROP_ENC)
+        a = ct.ed.get_text_all()
+        b = Path(fn).read_text(enc)
+        self.create_diff(a, b, fn0, fn)
+
+    def diff_with_tab(self):
+        name0 = self.get_name(ct.ed)
+
+        names = []
+        ed = []
+        for h in ct.ed_handles():
+            e = ct.Editor(h)
+            if self.is_match_name(e, name0):
+                continue
+            names.append(self.get_name(e))
+            ed.append(h)
+        if not names:
+            return
+
+        res = ct.dlg_menu(ct.DMENU_LIST, names, caption=_('Diff file with tab'))
+        if res is None:
+            return
+
+        name = names[res]
+        a = ct.ed.get_text_all()
+        b = ct.Editor(ed[res]).get_text_all()
+
+        self.create_diff(a, b, name0, name)
+
+    def format_untitled(self, e):
         return U_PREFIX + e.get_prop(ct.PROP_TAB_TITLE) + ' [%d]'%e.get_prop(ct.PROP_TAB_ID)
 
     def is_match_name(self, e, name):
@@ -243,6 +288,25 @@ class Command:
                 ct.app_proc(ct.PROC_SET_GROUPING, ct.GROUPS_ONE)
 
         self.refresh()
+
+    def create_diff(self, txt0, txt1, fn0, fn1):
+        if txt0[-1] != '\n': txt0 += '\n'
+        if txt1[-1] != '\n': txt1 += '\n'
+        a = txt0.splitlines(True)
+        b = txt1.splitlines(True)
+        r = self.diff.unidiff(a, b, fn0, fn1, self.cfg.get('diff_context'))
+
+        global DIFF_TAB_COUNT
+        tab = 'Diff ' + str(DIFF_TAB_COUNT)
+        DIFF_TAB_COUNT += 1
+
+        ct.file_open('')
+        ct.ed.set_text_all(r)
+        ct.ed.set_prop(ct.PROP_LEXER_FILE, 'Diff')
+        ct.ed.set_prop(ct.PROP_RO, True)
+        ct.ed.set_prop(ct.PROP_TAB_TITLE, tab)
+        ct.ed.set_prop(ct.PROP_TAB_TITLE_REASON, 'p')
+        ct.ed.set_prop(ct.PROP_SAVE_HISTORY, False)
 
     def on_state(self, ed_self, state):
         if state == ct.APPSTATE_THEME_SYNTAX:
@@ -447,6 +511,8 @@ class Command:
                 get_opt('enable_sync_caret', False),
             'enable_auto_refresh':
                 get_opt('enable_auto_refresh', False),
+            'diff_context':
+                get_opt('diff_context', 3),
         }
 
         new_nkind(NKIND_DELETED, config.get('color_deleted'))
@@ -485,7 +551,7 @@ class Command:
             p = 2 if to_next else 3
         y = eds[fc].get_carets()[0][1]
         line_cnt = eds[fc].get_line_count()
-        
+
         if to_next:
             for n, df in enumerate(self.diff.diffmap):
                 df_y = df[p] if df[p] <= line_cnt - 1 else line_cnt - 1

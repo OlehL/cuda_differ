@@ -23,20 +23,30 @@ method=compare_with_tab
 
 [item3]
 section=commands
+caption=Differ\Diff current document with file...
+method=diff_with
+
+[item3b]
+section=commands
+caption=Differ\Diff current document with tab...
+method=diff_with_tab
+
+[item4]
+section=commands
 caption=Differ\Refresh
 method=refresh
 
-[item4]
+[item5]
 section=commands
 caption=Differ\Focus the opposite file
 method=set_focus_to_opposite_panel
 
-[item5]
+[item6]
 section=commands
 caption=Differ\Select current difference
 method=select_current
 
-[item6]
+[item7]
 section=commands
 caption=Differ\Select all differences
 method=select_all_diff
