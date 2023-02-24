@@ -141,6 +141,7 @@ class Command:
         self.cfg = self.get_config()
         self.diff = df.Differ()
         self.diff_dlg = DifferDialog()
+        self.diff_tabs = []
 
         self.menuid_sep = None
         self.menuid_withfile = None
@@ -278,6 +279,7 @@ class Command:
                     break
 
         ct.file_open(files, options='/nohistory')
+        self.diff_tabs.append(ct.ed.get_prop(ct.PROP_TAB_TITLE, ''))
 
         # if file was in group-2, and now group-2 is empty, set "one group" mode
         if ct.app_proc(ct.PROC_GET_GROUPING, '') in [ct.GROUPS_2VERT, ct.GROUPS_2HORZ]:
@@ -312,7 +314,8 @@ class Command:
             self.refresh()
 
     def on_scroll(self, ed_self):
-        self.scroll.on_scroll(ed_self)
+        if ed_self.get_prop(ct.PROP_TAB_TITLE, '') in self.diff_tabs:
+            self.scroll.on_scroll(ed_self)
 
     def on_caret(self, ed_self):
         if self.cfg.get('enable_sync_caret', False):

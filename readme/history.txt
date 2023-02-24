@@ -1,3 +1,6 @@
+2023.02.24
+- fix: allow sync'ed scrolling _only_ for Differ-controlled file-pair
+
 2023.01.18
 + add: commands to produce a diff file (or patch)
 
