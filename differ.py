@@ -74,7 +74,6 @@ class Differ:
                         yield (B_DECOR_YELLOW, y)
 
     def unidiff(self, a, b, f1, f2, n):
-        print('n='+str(n)) # always prints 3 :-(
         return ''.join(unified_diff(a, b, f1, f2, n=n))
 
     def _fancy_replace(self, a, alo, ahi, b, blo, bhi):
