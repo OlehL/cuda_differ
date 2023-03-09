@@ -1,3 +1,6 @@
+2023.03.09
+- fix: reverted "clean temp-dir on exiting", we may have untitled tabs saved there
+
 2023.02.24
 - fix: allow sync'ed scrolling _only_ for Differ-controlled file-pair
 
