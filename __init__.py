@@ -109,7 +109,7 @@ def get_temp_name():
     now = datetime.now()
     while True:
         cnt += 1
-        fn = os.path.join(TEMP_DIR, 'text'+now.strftime('-%Y.%m.%d-%H.%M.%S-'+str(cnt)))
+        fn = os.path.join(TEMP_DIR, now.strftime('%Y.%m.%d-%H.%M-'+str(cnt))+'.txt')
         if not os.path.isfile(fn):
             return fn
 
