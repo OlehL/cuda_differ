@@ -110,7 +110,7 @@ def get_temp_name(ed_self: ct.Editor):
     title = ed_self.get_prop(ct.PROP_TAB_TITLE)
     while True:
         cnt += 1
-        fn = os.path.join(TEMP_DIR, title+now.strftime('_%Y.%m.%d-%H.%M-'+str(cnt))+'.txt')
+        fn = os.path.join(TEMP_DIR, title+'_{'+now.strftime('%Y.%m.%d-%H.%M')+'-'+str(cnt)+'}.txt')
         if not os.path.isfile(fn):
             return fn
 
@@ -805,7 +805,16 @@ class Command:
             e = ct.ed
         self.move_to_sep_tabs_ex(e)
 
-    def move_to_sep_tabs_ex(self, e):
+    def move_to_sep_tabs_ex(self, e: ct.Editor):
+
+        def short_title(e):
+            s = e.get_filename()
+            s = os.path.basename(s)
+            n = s.find('_{')
+            if n>0 and s.endswith('}.txt'):
+                s = s[:n]
+                return s
+
         if e.get_prop(ct.PROP_EDITORS_LINKED):
             return
         ed0 = ct.Editor(e.get_prop(ct.PROP_HANDLE_PRIMARY))
@@ -814,6 +823,9 @@ class Command:
         fn1 = ed1.get_filename()
         ed0.focus() # otherwise cmd_FileClose will be applied to wrong editor
         ed0.cmd(ct_cmd.cmd_FileClose)
-        ct.file_open(fn0)
-        ct.file_open(fn1)
 
+        for fn in [fn0, fn1]:
+            ct.file_open(fn)
+            title = short_title(ct.ed)
+            if title:
+                ct.ed.set_prop(ct.PROP_TAB_TITLE, title)
