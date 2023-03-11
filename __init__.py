@@ -99,7 +99,7 @@ TEMP_DIR = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'differ_backup')
 DIFF_TAB_COUNT = 1
 
 
-def get_temp_name():
+def get_temp_name(ed_self: ct.Editor):
     global TEMP_DIR
     if not os.path.isdir(TEMP_DIR):
         os.mkdir(TEMP_DIR)
@@ -107,9 +107,10 @@ def get_temp_name():
         return
     cnt = 0
     now = datetime.now()
+    title = ed_self.get_prop(ct.PROP_TAB_TITLE)
     while True:
         cnt += 1
-        fn = os.path.join(TEMP_DIR, now.strftime('%Y.%m.%d-%H.%M-'+str(cnt))+'.txt')
+        fn = os.path.join(TEMP_DIR, title+now.strftime('_%Y.%m.%d-%H.%M-'+str(cnt))+'.txt')
         if not os.path.isfile(fn):
             return fn
 
@@ -265,7 +266,7 @@ class Command:
                         else:
                             mb = ct.msg_box(text, ct.MB_OKCANCEL+ct.MB_ICONQUESTION)
                         if mb == ct.ID_OK:
-                            if not e.save(get_temp_name()):
+                            if not e.save(get_temp_name(e)):
                                 return
                             files[index] = e.get_filename()
                         else:
