@@ -139,10 +139,12 @@ def msg(s, level=0):
 
 
 def prettify_pair_title(title):
+    if not (TIMESTAMP_BEGIN in title and TIMESTAMP_END in title):
+        return
     SEP = ' | '
     names = title.split(SEP)
     if len(names) != 2:
-        return title
+        return
     for (i, s) in enumerate(names):
         n = s.find(TIMESTAMP_BEGIN)
         if n>0 and s.endswith(TIMESTAMP_END):
@@ -296,7 +298,9 @@ class Command:
         ct.file_open(files, options='/nohistory')
 
         title = ct.ed.get_prop(ct.PROP_TAB_TITLE)
-        title = prettify_pair_title(title)        
+        title2 = prettify_pair_title(title)
+        if title2:
+            title = title2        
         ct.ed.set_prop(ct.PROP_TAB_TITLE, title)
 
         self.diff_tabs.append(title)
@@ -833,6 +837,7 @@ class Command:
             if n>0 and s.endswith(TIMESTAMP_END):
                 s = s[:n]
                 return s
+            return '' # '' means to remove custom title
 
         if e.get_prop(ct.PROP_EDITORS_LINKED):
             return
@@ -844,7 +849,6 @@ class Command:
         ed0.cmd(ct_cmd.cmd_FileClose)
 
         for fn in [fn0, fn1]:
-            ct.file_open(fn)
+            ct.file_open(fn, options='/nohistory')
             title = short_title(ct.ed)
-            if title:
-                ct.ed.set_prop(ct.PROP_TAB_TITLE, title)
+            ct.ed.set_prop(ct.PROP_TAB_TITLE, title)
