@@ -300,7 +300,7 @@ class Command:
         title = ct.ed.get_prop(ct.PROP_TAB_TITLE)
         title2 = prettify_pair_title(title)
         if title2:
-            title = title2        
+            title = title2
         ct.ed.set_prop(ct.PROP_TAB_TITLE, title)
 
         self.diff_tabs.append(title)
