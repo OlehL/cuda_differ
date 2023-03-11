@@ -816,9 +816,3 @@ class Command:
         ct.file_open(fn0)
         ct.file_open(fn1)
 
-    def on_exit(self, ed_self):
-        return
-        #don't clear dir! untitled tabs may be saved there!
-        if os.path.isdir(TEMP_DIR):
-            import shutil
-            shutil.rmtree(TEMP_DIR)

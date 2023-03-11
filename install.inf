@@ -100,4 +100,4 @@ menu=o
 
 [item100]
 section=events
-events=on_tab_menu,on_exit
+events=on_tab_menu
