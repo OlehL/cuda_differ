@@ -2,8 +2,9 @@ import os
 import json
 from time import sleep
 import typing as tp
-import tempfile
 from pathlib import Path
+from datetime import datetime
+from time import strftime
 
 import cudatext as ct
 import cudatext_cmd as ct_cmd
@@ -94,22 +95,21 @@ OPTS_META = [
      },
 ]
 
-TEMP_DIR = os.path.join(tempfile.gettempdir(), 'cuda_differ')
-TEMP_INDEX = 0
-
+TEMP_DIR = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'differ_backup')
 DIFF_TAB_COUNT = 1
 
 
 def get_temp_name():
     global TEMP_DIR
-    global TEMP_INDEX
     if not os.path.isdir(TEMP_DIR):
         os.mkdir(TEMP_DIR)
     if not os.path.isdir(TEMP_DIR):
         return
+    cnt = 0
+    now = datetime.now()
     while True:
-        TEMP_INDEX += 1
-        fn = os.path.join(TEMP_DIR, 'text'+str(TEMP_INDEX))
+        cnt += 1
+        fn = os.path.join(TEMP_DIR, 'text'+now.strftime('-%Y.%m.%d-%H.%M.%S-'+str(cnt)))
         if not os.path.isfile(fn):
             return fn
 
