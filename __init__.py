@@ -98,7 +98,7 @@ OPTS_META = [
 TEMP_DIR = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'differ_backup')
 DIFF_TAB_COUNT = 1
 TIMESTAMP_BEGIN = '_{'
-TIMESTAPE_END = '}.txt'
+TIMESTAMP_END = '}.txt'
 
 
 def get_temp_name(e: ct.Editor):
@@ -112,7 +112,7 @@ def get_temp_name(e: ct.Editor):
     title = e.get_prop(ct.PROP_TAB_TITLE)
     while True:
         cnt += 1
-        fn = os.path.join(TEMP_DIR, title+TIMESTAMP_BEGIN+now.strftime('%Y.%m.%d-%H.%M')+'-'+str(cnt)+TIMESTAPE_END)
+        fn = os.path.join(TEMP_DIR, title+TIMESTAMP_BEGIN+now.strftime('%Y.%m.%d-%H.%M')+'-'+str(cnt)+TIMESTAMP_END)
         if not os.path.isfile(fn):
             return fn
 
@@ -145,7 +145,7 @@ def prettify_pair_title(title):
         return title
     for (i, s) in enumerate(names):
         n = s.find(TIMESTAMP_BEGIN)
-        if n>0 and s.endswith(TIMESTAPE_END):
+        if n>0 and s.endswith(TIMESTAMP_END):
             names[i] = s[:n]
     return SEP.join(names)
 
@@ -830,7 +830,7 @@ class Command:
             s = e.get_filename()
             s = os.path.basename(s)
             n = s.find(TIMESTAMP_BEGIN)
-            if n>0 and s.endswith(TIMESTAPE_END):
+            if n>0 and s.endswith(TIMESTAMP_END):
                 s = s[:n]
                 return s
 
