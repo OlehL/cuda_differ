@@ -97,6 +97,8 @@ OPTS_META = [
 
 TEMP_DIR = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'differ_backup')
 DIFF_TAB_COUNT = 1
+TIMESTAMP_BEGIN = '_{'
+TIMESTAPE_END = '}.txt'
 
 
 def get_temp_name(e: ct.Editor):
@@ -110,7 +112,7 @@ def get_temp_name(e: ct.Editor):
     title = e.get_prop(ct.PROP_TAB_TITLE)
     while True:
         cnt += 1
-        fn = os.path.join(TEMP_DIR, title+'_{'+now.strftime('%Y.%m.%d-%H.%M')+'-'+str(cnt)+'}.txt')
+        fn = os.path.join(TEMP_DIR, title+TIMESTAMP_BEGIN+now.strftime('%Y.%m.%d-%H.%M')+'-'+str(cnt)+TIMESTAPE_END)
         if not os.path.isfile(fn):
             return fn
 
@@ -142,8 +144,8 @@ def prettify_pair_title(title):
     if len(names) != 2:
         return title
     for (i, s) in enumerate(names):
-        n = s.find('_{')
-        if n>0 and s.endswith('}.txt'):
+        n = s.find(TIMESTAMP_BEGIN)
+        if n>0 and s.endswith(TIMESTAPE_END):
             names[i] = s[:n]
     return SEP.join(names)
 
@@ -824,11 +826,11 @@ class Command:
 
     def move_to_sep_tabs_ex(self, e: ct.Editor):
 
-        def short_title(e):
+        def short_title(e: ct.Editor):
             s = e.get_filename()
             s = os.path.basename(s)
-            n = s.find('_{')
-            if n>0 and s.endswith('}.txt'):
+            n = s.find(TIMESTAMP_BEGIN)
+            if n>0 and s.endswith(TIMESTAPE_END):
                 s = s[:n]
                 return s
 
