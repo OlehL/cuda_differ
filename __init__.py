@@ -305,7 +305,6 @@ class Command:
         ct.ed.set_prop(ct.PROP_LEXER_FILE, 'Diff')
         ct.ed.set_prop(ct.PROP_RO, True)
         ct.ed.set_prop(ct.PROP_TAB_TITLE, tab)
-        ct.ed.set_prop(ct.PROP_TAB_TITLE_REASON, 'p')
         ct.ed.set_prop(ct.PROP_SAVE_HISTORY, False)
 
     def on_state(self, ed_self, state):
