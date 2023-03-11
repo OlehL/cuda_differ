@@ -99,7 +99,7 @@ TEMP_DIR = os.path.join(ct.app_path(ct.APP_DIR_SETTINGS), 'differ_backup')
 DIFF_TAB_COUNT = 1
 
 
-def get_temp_name(ed_self: ct.Editor):
+def get_temp_name(e: ct.Editor):
     global TEMP_DIR
     if not os.path.isdir(TEMP_DIR):
         os.mkdir(TEMP_DIR)
@@ -107,7 +107,7 @@ def get_temp_name(ed_self: ct.Editor):
         return
     cnt = 0
     now = datetime.now()
-    title = ed_self.get_prop(ct.PROP_TAB_TITLE)
+    title = e.get_prop(ct.PROP_TAB_TITLE)
     while True:
         cnt += 1
         fn = os.path.join(TEMP_DIR, title+'_{'+now.strftime('%Y.%m.%d-%H.%M')+'-'+str(cnt)+'}.txt')
@@ -134,6 +134,18 @@ def msg(s, level=0):
         print(PLG_NAME + _(' WARNING:'), s)
     elif level == 2:
         print(PLG_NAME + _(' ERROR:'), s)
+
+
+def prettify_pair_title(title):
+    SEP = ' | '
+    names = title.split(SEP)
+    if len(names) != 2:
+        return title
+    for (i, s) in enumerate(names):
+        n = s.find('_{')
+        if n>0 and s.endswith('}.txt'):
+            names[i] = s[:n]
+    return SEP.join(names)
 
 
 class Command:
@@ -280,7 +292,12 @@ class Command:
                     break
 
         ct.file_open(files, options='/nohistory')
-        self.diff_tabs.append(ct.ed.get_prop(ct.PROP_TAB_TITLE, ''))
+
+        title = ct.ed.get_prop(ct.PROP_TAB_TITLE)
+        title = prettify_pair_title(title)        
+        ct.ed.set_prop(ct.PROP_TAB_TITLE, title)
+
+        self.diff_tabs.append(title)
 
         # if file was in group-2, and now group-2 is empty, set "one group" mode
         if ct.app_proc(ct.PROC_GET_GROUPING, '') in [ct.GROUPS_2VERT, ct.GROUPS_2HORZ]:
