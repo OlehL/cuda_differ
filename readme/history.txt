@@ -1,5 +1,7 @@
 2023.03.11
 * change: for untitled compared buffers, use folder settings/differ_backup instead of OS TEMP
++ add: use time-stamps in the filenames of temp files
++ add: restore 'untitled' titles when returning back from pair-view to 2 tabs 
 
 2023.03.09
 - fix: reverted "clean temp-dir on exiting", we may have untitled tabs saved there
