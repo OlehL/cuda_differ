@@ -848,8 +848,14 @@ class Command:
         ed0.cmd(ct_cmd.cmd_FileClose)
 
         for fn in [fn0, fn1]:
-            ct.file_open('')
-            ct.ed.set_prop(ct.PROP_TAB_TITLE, short_title(fn))
-            with open(fn, 'r', encoding='utf-8') as f:
-                text = f.read()
-            ct.ed.set_text_all(text)
+            # reopen 'temp' file? handle differently
+            if TIMESTAMP_BEGIN in fn and fn.endswith(TIMESTAMP_END):
+                ct.file_open('')
+                ct.ed.set_prop(ct.PROP_TAB_TITLE, short_title(fn))
+                with open(fn, 'r', encoding='utf-8') as f:
+                    text = f.read()
+                ct.ed.set_text_all(text)
+            else:
+                ct.file_open(fn, options='/nohistory')
+                title = short_title(ct.ed.get_filename())
+                ct.ed.set_prop(ct.PROP_TAB_TITLE, title)
