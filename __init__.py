@@ -830,8 +830,7 @@ class Command:
 
     def move_to_sep_tabs_ex(self, e: ct.Editor):
 
-        def short_title(e: ct.Editor):
-            s = e.get_filename()
+        def short_title(s):
             s = os.path.basename(s)
             n = s.find(TIMESTAMP_BEGIN)
             if n>0 and s.endswith(TIMESTAMP_END):
@@ -849,6 +848,8 @@ class Command:
         ed0.cmd(ct_cmd.cmd_FileClose)
 
         for fn in [fn0, fn1]:
-            ct.file_open(fn, options='/nohistory')
-            title = short_title(ct.ed)
-            ct.ed.set_prop(ct.PROP_TAB_TITLE, title)
+            ct.file_open('')
+            ct.ed.set_prop(ct.PROP_TAB_TITLE, short_title(fn))
+            with open(fn, 'r', encoding='utf-8') as f:
+                text = f.read()
+            ct.ed.set_text_all(text)
