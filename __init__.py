@@ -844,6 +844,7 @@ class Command:
         ed1 = ct.Editor(e.get_prop(ct.PROP_HANDLE_SECONDARY))
         fn0 = ed0.get_filename()
         fn1 = ed1.get_filename()
+
         ed0.focus() # otherwise cmd_FileClose will be applied to wrong editor
         ed0.cmd(ct_cmd.cmd_FileClose)
 
@@ -857,5 +858,3 @@ class Command:
                 ct.ed.set_text_all(text)
             else:
                 ct.file_open(fn, options='/nohistory')
-                title = short_title(ct.ed.get_filename())
-                ct.ed.set_prop(ct.PROP_TAB_TITLE, title)
