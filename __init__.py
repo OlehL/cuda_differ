@@ -742,7 +742,7 @@ class Command:
             return False
         return True
 
-    def tabmenu_init(self, cur_ed):
+    def tabmenu_init(self, cur_ed: ct.Editor):
 
         if self.menuid_sep is None:
             self.menuid_sep = ct.menu_proc('tab', ct.MENU_ADD,
@@ -755,6 +755,7 @@ class Command:
                 command='module=cuda_differ;cmd=tabmenu_chooser;',
                 caption=_('Compare with...')
                 )
+
             self.menuid_withtab = ct.menu_proc(compare_menu, ct.MENU_ADD,
                 caption=_('Compare with tab')
                 )
@@ -768,6 +769,8 @@ class Command:
 
         handles = ct.ed_handles()[:30] # avoid too much menu items when user opens 100 files
         cur_fn = self.get_name(cur_ed)
+        path_focused = self.get_name(ct.ed)
+        self.menuid_withfocused = 0
 
         paths = []
         if len(handles) > 1:
@@ -779,6 +782,12 @@ class Command:
 
             if paths:
                 ct.menu_proc(self.menuid_withtab, ct.MENU_CLEAR)
+
+                self.menuid_withfocused = ct.menu_proc(self.menuid_withtab, ct.MENU_ADD,
+                    command='module=cuda_differ;cmd=tabmenu_files;info='+cur_fn+'::'+path_focused+';',
+                    caption=_('(Focused tab)')
+                    )
+
                 for path in paths:
                     ct.menu_proc(self.menuid_withtab, ct.MENU_ADD,
                         command='module=cuda_differ;cmd=tabmenu_files;info='+cur_fn+'::'+path+';',
@@ -786,8 +795,12 @@ class Command:
                         )
 
         cur_ok = self.tabmenu_editor_ok(cur_ed, '')
+        cur_is_focused = cur_ed.get_prop(ct.PROP_HANDLE_PRIMARY) == \
+                         ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY)
+
         ct.menu_proc(self.menuid_withtab, ct.MENU_SET_ENABLED, command=cur_ok and bool(paths))
         ct.menu_proc(self.menuid_withfile, ct.MENU_SET_ENABLED, command=cur_ok)
+        ct.menu_proc(self.menuid_withfocused, ct.MENU_SET_ENABLED, command=cur_ok and not cur_is_focused)
         ct.menu_proc(self.menuid_move2septabs, ct.MENU_SET_ENABLED, command=cur_ed.get_prop(ct.PROP_EDITORS_LINKED)==False)
 
     def tabmenu_chooser(self):
