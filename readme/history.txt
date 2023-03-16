@@ -1,3 +1,6 @@
+2023.03.16
++ add: context menu item "Compare with tab > (Focused tab)"
+
 2023.03.11
 * change: for untitled compared buffers, use folder settings/differ_backup instead of OS TEMP
 + add: use time-stamps in the filenames of temp files
