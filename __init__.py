@@ -843,6 +843,21 @@ class Command:
 
     def move_to_sep_tabs_ex(self, e: ct.Editor):
 
+        if e.get_prop(ct.PROP_EDITORS_LINKED):
+            return
+        e1 = ct.Editor(e.get_prop(ct.PROP_HANDLE_PRIMARY))
+        e2 = ct.Editor(e.get_prop(ct.PROP_HANDLE_SECONDARY))
+
+        fn1 = e1.get_filename()
+        fn2 = e2.get_filename()
+
+        e1.focus() # otherwise cmd_FileClose will be applied to wrong editor
+        e1.cmd(ct_cmd.cmd_FileClose)
+        
+        self.reopen_sep_tabs((fn1, fn2))
+
+    def reopen_sep_tabs(self, filenames):
+
         def short_title(s):
             s = os.path.basename(s)
             n = s.find(TIMESTAMP_BEGIN)
@@ -851,17 +866,7 @@ class Command:
                 return s
             return '' # '' means to remove custom title
 
-        if e.get_prop(ct.PROP_EDITORS_LINKED):
-            return
-        ed0 = ct.Editor(e.get_prop(ct.PROP_HANDLE_PRIMARY))
-        ed1 = ct.Editor(e.get_prop(ct.PROP_HANDLE_SECONDARY))
-        fn0 = ed0.get_filename()
-        fn1 = ed1.get_filename()
-
-        ed0.focus() # otherwise cmd_FileClose will be applied to wrong editor
-        ed0.cmd(ct_cmd.cmd_FileClose)
-
-        for fn in [fn0, fn1]:
+        for fn in filenames:
             # reopen 'temp' file? handle differently
             if TIMESTAMP_BEGIN in fn and fn.endswith(TIMESTAMP_END):
                 ct.file_open('')
