@@ -450,7 +450,7 @@ class Command:
 
     def set_gap(self, e, row, n=1):
         "set gap line after row line"
-        _, h = e.get_prop(ct.PROP_CELL_SIZE)
+        __, h = e.get_prop(ct.PROP_CELL_SIZE)
         h_size = h * n
         e.gap(ct.GAP_ADD, row-1, 0,
               tag=DIFF_TAG,
@@ -668,7 +668,7 @@ class Command:
             if len(carets) != 1:
                 return []
             caret = carets[0]
-            _, y1, _, y2 = caret
+            __, y1, __, y2 = caret
             if y2 == -1:
                 return ed.get_text_line(y1) + '\n'
             else:
