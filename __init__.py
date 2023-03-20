@@ -876,3 +876,23 @@ class Command:
                 ct.ed.set_text_all(text)
             else:
                 ct.file_open(fn, options='/nohistory')
+
+    def on_close_pre(self, ed_self: ct.Editor):
+
+        title = ed_self.get_prop(ct.PROP_TAB_TITLE, '')
+        if title in self.diff_tabs:
+            res = ct.msg_box(_('This is pair-tab controlled by Differ plugin.\nPress Yes to close both files. Press No to return back to 2 separate tabs.'), 
+                ct.MB_YESNO+ct.MB_ICONQUESTION)
+            if res==ct.ID_YES:
+                return
+            if res==ct.ID_NO:
+                handle = ed_self.get_prop(ct.PROP_HANDLE_SELF)
+                self.diff_tabs.remove(title) # avoid duplicate calling of on_close_pre
+                callback = 'module=cuda_differ;cmd=move_to_sep_tabs_timer;info='+str(handle)+';'
+                ct.timer_proc(ct.TIMER_START_ONE, callback, 500)
+                return False
+
+    def move_to_sep_tabs_timer(self, tag='', info=''):
+
+        e = ct.Editor(int(info))
+        self.move_to_sep_tabs_ex(e)
