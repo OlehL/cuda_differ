@@ -881,7 +881,7 @@ class Command:
 
         title = ed_self.get_prop(ct.PROP_TAB_TITLE, '')
         if title in self.diff_tabs:
-            res = ct.msg_box(_('This is pair-tab controlled by Differ plugin.\nPress Yes to close both files. Press No to return back to 2 separate tabs.'), 
+            res = ct.msg_box(_('This is pair-tab controlled by Differ plugin.\n\nYes: to close both files.\nNo: to return to 2 separate tabs.'), 
                 ct.MB_YESNO+ct.MB_ICONQUESTION)
             if res==ct.ID_YES:
                 return
