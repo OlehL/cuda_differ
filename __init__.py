@@ -881,13 +881,21 @@ class Command:
 
         title = ed_self.get_prop(ct.PROP_TAB_TITLE, '')
         if title in self.diff_tabs:
+            h0 = ed_self.get_prop(ct.PROP_HANDLE_PRIMARY)
+            h1 = ed_self.get_prop(ct.PROP_HANDLE_SECONDARY)
+            e0 = ct.Editor(h0)
+            e1 = ct.Editor(h1)
+            for e in [e0, e1]:
+                if e.get_prop(ct.PROP_MODIFIED):
+                    e.save()
+
+            self.diff_tabs.remove(title) # avoid duplicate call of on_close_pre
             res = ct.msg_box(_('This is pair-tab controlled by Differ plugin.\n\nYes: to close both files.\nNo: to return to 2 separate tabs.'), 
                 ct.MB_YESNO+ct.MB_ICONQUESTION)
             if res==ct.ID_YES:
                 return
             if res==ct.ID_NO:
                 handle = ed_self.get_prop(ct.PROP_HANDLE_SELF)
-                self.diff_tabs.remove(title) # avoid duplicate calling of on_close_pre
                 callback = 'module=cuda_differ;cmd=move_to_sep_tabs_timer;info='+str(handle)+';'
                 ct.timer_proc(ct.TIMER_START_ONE, callback, 500)
                 return False
