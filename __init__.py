@@ -863,6 +863,7 @@ class Command:
 
     def reopen_sep_tabs(self, filenames):
 
+        '''
         def short_title(s):
             s = os.path.basename(s)
             n = s.find(TIMESTAMP_BEGIN)
@@ -870,15 +871,12 @@ class Command:
                 s = s[:n]
                 return s
             return '' # '' means to remove custom title
+        '''
 
         for fn in filenames:
-            # reopen 'temp' file? handle differently
             if TIMESTAMP_BEGIN in fn and fn.endswith(TIMESTAMP_END):
-                ct.file_open('')
-                ct.ed.set_prop(ct.PROP_TAB_TITLE, short_title(fn))
-                with open(fn, 'r', encoding='utf-8') as f:
-                    text = f.read()
-                ct.ed.set_text_all(text)
+                # don't reopen file from 'differ_backup'
+                pass
             else:
                 ct.file_open(fn, options='/nohistory')
 
