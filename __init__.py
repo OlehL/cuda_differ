@@ -893,6 +893,7 @@ class Command:
             res = ct.msg_box(_('This is pair-tab controlled by Differ plugin.\n\nYes: to close both files.\nNo: to return to 2 separate tabs.'), 
                 ct.MB_YESNO+ct.MB_ICONQUESTION)
             if res==ct.ID_YES:
+                ed_self.set_prop(ct.PROP_TAB_TITLE, '')
                 return
             if res==ct.ID_NO:
                 handle = ed_self.get_prop(ct.PROP_HANDLE_SELF)
