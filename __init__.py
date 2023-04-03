@@ -160,6 +160,7 @@ class Command:
         self.diff_dlg = DifferDialog()
         self.diff_tabs = []
 
+        self.compare_menu = None
         self.menuid_sep = None
         self.menuid_withfile = None
         self.menuid_withtab = None
@@ -748,34 +749,38 @@ class Command:
         return True
 
     def tabmenu_init(self, cur_ed: ct.Editor):
+        cur_fn = self.get_name(cur_ed)
+        path_focused = self.get_name(ct.ed)
 
         if self.menuid_sep is None:
             self.menuid_sep = ct.menu_proc('tab', ct.MENU_ADD,
                 caption='-'
                 )
-            compare_menu = ct.menu_proc('tab', ct.MENU_ADD,
+            self.compare_menu = ct.menu_proc('tab', ct.MENU_ADD,
                 caption=PLG_NAME
                 )
-            self.menuid_withfile = ct.menu_proc(compare_menu, ct.MENU_ADD,
-                command='module=cuda_differ;cmd=tabmenu_chooser;',
-                caption=_('Compare with...')
-                )
 
-            self.menuid_withtab = ct.menu_proc(compare_menu, ct.MENU_ADD,
-                caption=_('Compare with tab')
-                )
-            self.menuid_sep = ct.menu_proc(compare_menu, ct.MENU_ADD,
-                caption='-'
-                )
-            self.menuid_move2septabs = ct.menu_proc(compare_menu, ct.MENU_ADD,
-                command='module=cuda_differ;cmd=move_to_sep_tabs_context;',
-                caption=_('Back to separate tabs')
-                )
+        ct.menu_proc(self.compare_menu, ct.MENU_CLEAR)
+        self.menuid_withfile = ct.menu_proc(self.compare_menu, ct.MENU_ADD,
+            command='module=cuda_differ;cmd=tabmenu_chooser;',
+            caption=_('Compare with...')
+            )
+        self.menuid_withfocused = ct.menu_proc(self.compare_menu, ct.MENU_ADD,
+            command='module=cuda_differ;cmd=tabmenu_files;info='+cur_fn+'::'+path_focused+';',
+            caption=_('Compare with focused tab')
+            )
+        self.menuid_withtab = ct.menu_proc(self.compare_menu, ct.MENU_ADD,
+            caption=_('Compare with tab')
+            )
+        self.menuid_sep = ct.menu_proc(self.compare_menu, ct.MENU_ADD,
+            caption='-'
+            )
+        self.menuid_move2septabs = ct.menu_proc(self.compare_menu, ct.MENU_ADD,
+            command='module=cuda_differ;cmd=move_to_sep_tabs_context;',
+            caption=_('Back to separate tabs')
+            )
 
         handles = ct.ed_handles()[:30] # avoid too much menu items when user opens 100 files
-        cur_fn = self.get_name(cur_ed)
-        path_focused = self.get_name(ct.ed)
-        self.menuid_withfocused = 0
 
         paths = []
         if len(handles) > 1:
@@ -787,11 +792,6 @@ class Command:
 
             if paths:
                 ct.menu_proc(self.menuid_withtab, ct.MENU_CLEAR)
-
-                self.menuid_withfocused = ct.menu_proc(self.menuid_withtab, ct.MENU_ADD,
-                    command='module=cuda_differ;cmd=tabmenu_files;info='+cur_fn+'::'+path_focused+';',
-                    caption=_('(Focused tab)')
-                    )
 
                 for path in paths:
                     ct.menu_proc(self.menuid_withtab, ct.MENU_ADD,
