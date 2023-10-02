@@ -1,3 +1,6 @@
+2023.10.02
+- fix: preserve lexers of 2 compared tabs (fix by @ThaiDat)
+
 2023.04.03
 * change: move context menu item "Compare with tab > (Focused tab)" up one level (by @pintassilgo)
 
@@ -116,3 +119,4 @@
 
 2019.02.06
 initial version
+rsion
