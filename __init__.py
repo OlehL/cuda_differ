@@ -272,11 +272,13 @@ class Command:
 
     def set_files(self, file0, file1):
         files = [file0, file1]
+        lexers = [None, None]
         for (index, name) in enumerate(files):
             for h in ct.ed_handles():
                 e = ct.Editor(h)
                 e_titled = e.get_filename()!=''
                 if self.is_match_name(e, name):
+                    lexers[index] = e.get_prop(ct.PROP_LEXER_FILE)
                     if not e_titled:
                         temp_text = e.get_text_all()
                         temp_fn = get_temp_name(e)
@@ -310,6 +312,14 @@ class Command:
         ct.ed.set_prop(ct.PROP_TAB_TITLE, title)
 
         self.diff_tabs.append(title)
+        
+        # set lexers
+        a_ed = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_PRIMARY))
+        b_ed = ct.Editor(ct.ed.get_prop(ct.PROP_HANDLE_SECONDARY))
+        if lexers[0] is not None:
+            a_ed.set_prop(ct.PROP_LEXER_FILE, lexers[0])
+        if lexers[1] is not None:
+            b_ed.set_prop(ct.PROP_LEXER_FILE, lexers[1])
 
         # if file was in group-2, and now group-2 is empty, set "one group" mode
         if ct.app_proc(ct.PROC_GET_GROUPING, '') in [ct.GROUPS_2VERT, ct.GROUPS_2HORZ]:
