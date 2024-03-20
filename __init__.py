@@ -4,7 +4,7 @@ from time import sleep
 import typing as tp
 from pathlib import Path
 from datetime import datetime
-from time import strftime
+#from time import strftime
 
 import cudatext as ct
 import cudatext_cmd as ct_cmd
@@ -593,15 +593,15 @@ class Command:
         line_cnt = eds[fc].get_line_count()
 
         if to_next:
-            for n, df in enumerate(self.diff.diffmap):
-                df_y = df[p] if df[p] <= line_cnt - 1 else line_cnt - 1
+            for n, dif in enumerate(self.diff.diffmap):
+                df_y = dif[p] if dif[p] <= line_cnt - 1 else line_cnt - 1
                 if y < df_y:
                     i = n
                     break
         else: # to prev
-            for n, df in reversed(list(enumerate(self.diff.diffmap))):
-                _y = y if df[p] == df[p-1] else y + 1 # adjust y for empty diff fragments
-                if _y > df[p]:
+            for n, dif in reversed(list(enumerate(self.diff.diffmap))):
+                _y = y if dif[p] == dif[p-1] else y + 1 # adjust y for empty diff fragments
+                if _y > dif[p]:
                     i = n
                     break
 
@@ -633,9 +633,9 @@ class Command:
         fc, eds = self.focused
         p = fc * 2
         y = eds[fc].get_carets()[0][1]
-        for df in self.diff.diffmap:
-            if df[p] <= y < df[p+1]:
-                return df
+        for dif in self.diff.diffmap:
+            if dif[p] <= y < dif[p+1]:
+                return dif
 
     def select_current(self):
         cur_change = self.get_current_change
@@ -728,16 +728,16 @@ class Command:
 
         esc = self.cfg.get('enable_sync_caret', False)
         p = fc * 2
-        for df in self.diff.diffmap:
-            if df[p] <= y < df[p+1]:
+        for dif in self.diff.diffmap:
+            if dif[p] <= y < dif[p+1]:
                 self.cfg['enable_sync_caret'] = False
-                eds[op].set_caret(0, df[op*2])
+                eds[op].set_caret(0, dif[op*2])
                 self.cfg['enable_sync_caret'] = esc
                 return
-        for df in self.diff.diffmap:
-            if y < df[p]:
+        for dif in self.diff.diffmap:
+            if y < dif[p]:
                 self.cfg['enable_sync_caret'] = False
-                eds[op].set_caret(x, df[op*2]-df[p]+y)
+                eds[op].set_caret(x, dif[op*2]-dif[p]+y)
                 self.cfg['enable_sync_caret'] = esc
                 return
 
@@ -842,9 +842,9 @@ class Command:
         fc, eds = self.focused
         y1,y2 = (0,1) if fc == 0 else (2,3)
 
-        for n, df in enumerate(self.diff.diffmap):
+        for n, dif in enumerate(self.diff.diffmap):
             id = ct.CARET_SET_ONE if n == 0 else ct.CARET_ADD
-            eds[fc].set_caret(0, df[y1], 0, df[y2], id=id)
+            eds[fc].set_caret(0, dif[y1], 0, dif[y2], id=id)
 
     def move_to_sep_tabs(self):
         self.move_to_sep_tabs_ex(ct.ed)
