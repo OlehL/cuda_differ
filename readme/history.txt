@@ -1,3 +1,70 @@
+2026.07.08
+- fix: avoid deprecated API: PROP_SCROLL_HORZ_SMOOTH
+
+2025.12.29
+- fix: avoid deprecated API
+
+2025.03.21
++ add: on app exiting, delete all files in the folder settings/differ_backup (only with CudaText option "ui_one_instance":true)
+
+2024.07.06
+- fix: if 1 of 2 files don't have 'diffs', we must set LastLineOnTop for it manually
+
+2023.10.02
+- fix: preserve lexers of 2 compared tabs (fix by @ThaiDat)
+
+2023.04.03
+* change: move context menu item "Compare with tab > (Focused tab)" up one level (by @pintassilgo)
+
+2023.03.26
+* change: reverted last change (ie don't show messagebox on closing pair-tab)
+* change: when comparing untitled tab, make its copy in the Differ-tab
+
+2023.03.20
++ add: on closing pair-tab controlled by Differ, ask user to 'return back to 2 separate tabs'
+
+2023.03.16
++ add: context menu item "Differ > Compare with tab > (Focused tab)"
+
+2023.03.11
+* change: for untitled compared buffers, use folder settings/differ_backup instead of OS TEMP
++ add: use time-stamps in the filenames of temp files
++ add: restore 'untitled' titles when returning back from pair-view to 2 tabs 
+
+2023.03.09
+- fix: reverted "clean temp-dir on exiting", we may have untitled tabs saved there
+
+2023.02.24
+- fix: allow sync'ed scrolling _only_ for Differ-controlled file-pair
+
+2023.01.18
++ add: commands to produce a diff file (or patch)
+
+2022.12.28
++ add: support different untitled tabs which have the same tab-title
+
+2022.12.12
++ add: clean temp-dir on exiting
+
+2022.12.05
++ add: command "Move 2 comparing files to separate tabs"
++ add: command "Compare current document with tab..."
++ add: support work with untitled tabs too; untitled tab will be auto-saved to temp-dir (by Alexey T.)
+
+2022.11.27
+* change: removed on_tab_change handler, it caused big slowdown on closing 700 files in app (by Alexey T.)
+
+2022.11.24
+* change: changed on_open handler to on_tab_menu (of CudaText 1.178.0), so plugin's tab-menu items will disappaer in old CudaText versions (it was needed to fix big slowdown when user opens 100+ files) (by Alexey T.)
+- fix: avoid too much menu items in tab-menu if user opened 20+ files
+
+2022.10.05
++ add: command "Select all differences" (by @veksha)
++ add: if compared files are edited to become equal, "Refresh" command must clear all markers/bookmarks (by Alexey T.)
++ add: if any of compared files don't have final EOL, add it to comparing text (by Alexey T.)
+
+2022.04.02
++ add: menu items "Compare with tab" and "Compare with..." added to context menu of tab-header (patches by @ildarkhasanshin and Alexey T.)
 
 2021.08.20
 + add: i18n support (patch by Markus)
@@ -57,7 +124,7 @@
 2019.04.17
 * require CudaText 1.78.7
 + add: changed sync-scroll to smooth (per pixel) scroll
-+ add: if 2+ groups are opened in CudaText, suggest in Choose Files dialog files from groups 1 and 2 
++ add: if 2+ groups are opened in CudaText, suggest in Choose Files dialog files from groups 1 and 2
 
 2019.02.07
 - minor fixes

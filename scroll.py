@@ -14,20 +14,15 @@ class ScrollSplittedTab:
         self.tab_id = set()
 
     def toggle(self, on=True):
-        if on:
-            ev = 'on_tab_change,on_state,on_caret,on_change_slow'
-            if ct.ed.get_prop(ct.PROP_TAB_ID) in self.tab_id:
-                ev = 'on_scroll,on_tab_change,on_state,on_caret,on_change_slow'
-        else:
-            ev = 'on_state,on_caret,on_change_slow'
-        ct.app_proc(ct.PROC_SET_EVENTS, self.name+';'+ev+';;')
+        act = ct.PROC_EVENTS_SUB if on and ct.ed.get_prop(ct.PROP_TAB_ID) in self.tab_id else ct.PROC_EVENTS_UNSUB
+        ct.app_proc(act, self.name+';on_scroll;;')
 
     def on_scroll(self, ed_self):
         if ed_self.get_prop(ct.PROP_SPLIT)[0] == '-':
             return
 
-        pos_v = ed_self.get_prop(ct.PROP_SCROLL_VERT_SMOOTH)
-        pos_h = ed_self.get_prop(ct.PROP_SCROLL_HORZ_SMOOTH)
+        pos_v = ed_self.get_prop(ct.PROP_SCROLL_VERT_INFO)['smooth_pos']
+        pos_h = ed_self.get_prop(ct.PROP_SCROLL_HORZ_INFO)['smooth_pos']
 
         hndl_self = ed_self.get_prop(ct.PROP_HANDLE_SELF)
         hndl_primary = ed_self.get_prop(ct.PROP_HANDLE_PRIMARY)
@@ -38,7 +33,7 @@ class ScrollSplittedTab:
             hndl_opposit = hndl_primary
         e = ct.Editor(hndl_opposit)
 
-        e.set_prop(ct.PROP_SCROLL_VERT_SMOOTH, pos_v)
-        e.set_prop(ct.PROP_SCROLL_HORZ_SMOOTH, pos_h)
+        e.set_prop(ct.PROP_SCROLL_VERT_INFO, {'smooth_pos': pos_v})
+        e.set_prop(ct.PROP_SCROLL_HORZ_INFO, {'smooth_pos': pos_h})
 
         e.cmd(ct_cmd.cmd_RepaintEditor)

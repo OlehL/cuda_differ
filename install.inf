@@ -3,8 +3,8 @@ title=Differ
 desc=Plugin to compare two files and show compare results side by side
 type=cudatext-plugin
 subdir=cuda_differ
-homepage=https://github.com/OlehL/cuda_differ
-api=1.0.302
+homepage=https://github.com/CudaText-addons/cuda_differ
+api=1.0.471
 
 [item1]
 section=commands
@@ -13,23 +13,43 @@ method=choose_files
 
 [item2]
 section=commands
-caption=Differ\Compare current file with...
+caption=Differ\Compare current document with file...
 method=compare_with
 
+[item2b]
+section=commands
+caption=Differ\Compare current document with tab...
+method=compare_with_tab
+
 [item3]
+section=commands
+caption=Differ\Diff current document with file...
+method=diff_with
+
+[item3b]
+section=commands
+caption=Differ\Diff current document with tab...
+method=diff_with_tab
+
+[item4]
 section=commands
 caption=Differ\Refresh
 method=refresh
 
-[item4]
+[item5]
 section=commands
 caption=Differ\Focus the opposite file
 method=set_focus_to_opposite_panel
 
-[item5]
+[item6]
 section=commands
 caption=Differ\Select current difference
 method=select_current
+
+[item7]
+section=commands
+caption=Differ\Select all differences
+method=select_all_diff
 
 [item10]
 section=commands
@@ -61,6 +81,11 @@ section=commands
 caption=Differ\Copy current line to the left
 method=copy_line_left
 
+[item30]
+section=commands
+caption=Differ\Move 2 comparing files to separate tabs
+method=move_to_sep_tabs
+
 [item40]
 section=commands
 caption=Differ\Config...
@@ -72,3 +97,7 @@ section=commands
 caption=Differ\Clear recents history
 method=clear_history
 menu=o
+
+[item100]
+section=events
+events=on_state~,on_caret~,on_change_slow~,on_tab_menu,on_close_pre~,on_exit
