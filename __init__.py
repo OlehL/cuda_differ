@@ -496,7 +496,7 @@ class Command:
               )
 
     def set_decor(self, e, row, text, color):
-        e.decor(ct.DECOR_SET, row, DIFF_TAG, text, color, bold=True)
+        e.decor(ct.DECOR_SET, row, DIFF_TAG, text, color, style='b')
 
     def set_bookmark2(self, e, row, nk):
         e.bookmark(ct.BOOKMARK2_SET, row,
